@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Baccarat Dealer Training App</title>
+<style>
+  html, body { margin:0; padding:0; background:#0f172a; }
+  * { box-sizing: border-box; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const SUITS = ["♠","♥","♦","♣"];
+const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const CV = {A:1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":0,J:0,Q:0,K:0};
+
+function ht(c){let s=0;for(let i=0;i<c.length;i++)s+=CV[c[i].rank];return s%10;}
+function rc(){return{rank:RANKS[Math.floor(Math.random()*13)],suit:SUITS[Math.floor(Math.random()*4)]};}
+function rh(){return[rc(),rc()];}
+function bd(bT,pR){const v=CV[pR];if(bT<=2)return true;if(bT===3)return v!==8;if(bT===4)return v>=2&&v<=7;if(bT===5)return v>=4&&v<=7;if(bT===6)return v===6||v===7;return false;}
+function mkShoe(){const d=[];for(let x=0;x<8;x++)for(let si=0;si<4;si++)for(let ri=0;ri<13;ri++)d.push({rank:RANKS[ri],suit:SUITS[si]});for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}return d;}
+function shuf(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function Card({rank,suit,size="md"}){
+  const isR=suit==="♥"||suit==="♦";
+  const sz=size==="sm"?{width:48,minHeight:64,fontSize:12}:{width:64,minHeight:88,fontSize:14};
+  return <div style={{...sz,borderRadius:8,border:"2px solid #d1d5db",display:"inline-flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",boxShadow:"0 2px 8px rgba(0,0,0,0.2)",fontWeight:700,color:isR?"#e53e3e":"#1a202c"}}><span>{rank}</span><span>{suit}</span></div>;
+}
+
+function PBar({current,total,label}){
+  return <div><div style={{color:"#9ca3af",fontSize:13,marginBottom:4}}>{label}</div><div style={{width:"100%",background:"#374151",borderRadius:99,height:8,overflow:"hidden"}}><div style={{height:"100%",borderRadius:99,transition:"width 0.5s",background:"linear-gradient(90deg,#48bb78,#38a169)",width:(current/total)*100+"%"}}/></div></div>;
+}
+
+const styles = {
+  panel:{padding:16,borderRadius:12,border:"1px solid #374151",background:"#1e293b",marginBottom:16},
+  ruleGreen:{padding:"10px 14px",borderRadius:8,marginBottom:8,fontSize:14,border:"1px solid #166534",background:"#14532d",color:"#bbf7d0"},
+  ruleYellow:{padding:"10px 14px",borderRadius:8,marginBottom:8,fontSize:14,border:"1px solid #854d0e",background:"rgba(113,63,18,0.4)",color:"#fef08a"},
+  ruleRed:{padding:"10px 14px",borderRadius:8,marginBottom:8,fontSize:14,border:"1px solid #7f1d1d",background:"rgba(69,10,10,0.4)",color:"#fecaca"},
+  ruleBlue:{padding:"10px 14px",borderRadius:8,marginBottom:8,fontSize:14,border:"1px solid #1e3a8a",background:"rgba(30,58,138,0.4)",color:"#bfdbfe"},
+  exRow:{display:"flex",alignItems:"center",gap:12,padding:8,borderRadius:8,background:"#2d3748",marginBottom:8},
+  btn:{padding:"10px 20px",borderRadius:10,border:"none",cursor:"pointer",fontWeight:700,fontSize:14,transition:"all 0.2s"},
+  quizOpt:{padding:12,borderRadius:8,border:"2px solid #4b5563",background:"#1f2937",cursor:"pointer",textAlign:"left",width:"100%",fontSize:14,color:"#fff",transition:"all 0.15s",marginBottom:8},
+  warnBox:{padding:12,borderRadius:8,marginBottom:10,border:"2px solid #dc2626",fontSize:13,background:"rgba(220,38,38,0.15)",color:"#fca5a5"},
+  topBar:{display:"flex",alignItems:"center",padding:"12px 20px",background:"#0f172a",borderBottom:"1px solid #1e293b"},
+  topBarLink:{color:"#9ca3af",fontSize:13,cursor:"pointer",minWidth:100,background:"none",border:"none"},
+  modItem:{width:"100%",textAlign:"left",padding:16,borderRadius:12,border:"1px solid #4b5563",background:"#1e293b",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:16,marginBottom:10,color:"#fff"},
+  statsBar:{display:"flex",justifyContent:"space-around",textAlign:"center",padding:12,flexWrap:"wrap",gap:8,background:"#1e293b",borderRadius:12,border:"1px solid #374151",marginBottom:16},
+};
+
+const MODULES=[
+  {id:1,title:"Card Values & Totals",icon:"\u{1F0CF}",desc:"How every card is valued in Baccarat"},
+  {id:2,title:"Naturals & Standing Rules",icon:"\u2B50",desc:"When the game stops immediately"},
+  {id:3,title:"Player Third Card Rule",icon:"\u{1F464}",desc:"Know when Player draws or stands"},
+  {id:4,title:"Banker Third Card Rule",icon:"\u{1F3E6}",desc:"3 difficulty levels: Beginner, Advanced, Expert"},
+  {id:5,title:"Payouts & Commission",icon:"\u{1F4B0}",desc:"5% commission, tie bets, procedures"},
+  {id:7,title:"Banker Quick Test",icon:"\u26A1",desc:"2-question speed drill"}
+];
+
+function L1(){return <div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>🎯 Only the LAST digit matters</h3><p style={{color:"#d1d5db",fontSize:14}}>If cards add to 15 the value is <strong style={{color:"#fff"}}>5</strong>. Highest: <strong style={{color:"#fff"}}>9</strong>.</p></div>
+  <div style={styles.panel}><h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:12}}>📋 Card Values</h3>
+    <div style={styles.exRow}><Card rank="A" suit="♠" size="sm"/><span style={{color:"#d1d5db"}}>Ace = 1</span></div>
+    <div style={styles.exRow}><Card rank="5" suit="♥" size="sm"/><Card rank="7" suit="♦" size="sm"/><span style={{color:"#d1d5db"}}>2-9 = Face Value</span></div>
+    <div style={styles.exRow}><Card rank="K" suit="♠" size="sm"/><Card rank="10" suit="♣" size="sm"/><span style={{color:"#d1d5db"}}>10, J, Q, K = 0</span></div>
+  </div>
+  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:18,fontWeight:700,marginBottom:12}}>✏️ Examples</h3>
+    <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="7" suit="♠" size="sm"/><Card rank="5" suit="♥" size="sm"/></div><span style={{color:"#d1d5db"}}>7+5=12 → 2</span></div>
+    <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="K" suit="♦" size="sm"/><Card rank="9" suit="♣" size="sm"/></div><span style={{color:"#d1d5db"}}>0+9 = Natural 9</span></div>
+    <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="6" suit="♥" size="sm"/><Card rank="4" suit="♠" size="sm"/></div><span style={{color:"#d1d5db"}}>6+4=10 → 0</span></div>
+  </div>
+</div>;}
+
+function L2(){return <div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>⭐ Natural: 8 or 9</h3><p style={{color:"#d1d5db",fontSize:14}}>Either hand 8 or 9 on first 2 cards = <strong style={{color:"#fff"}}>Natural</strong>. <strong style={{color:"#f87171"}}>No more cards.</strong></p></div>
+  <div style={styles.panel}><div style={styles.ruleGreen}>8 or 9 → <strong>NATURAL</strong></div><div style={styles.ruleYellow}>Player 6-7 → <strong>STANDS</strong></div><div style={styles.ruleRed}>Player 0-5 → <strong>DRAWS</strong></div></div>
+</div>;}
+
+function L3(){return <div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>👤 Player Third Card</h3>
+    <div style={styles.ruleGreen}>0-5 → DRAWS</div><div style={styles.ruleYellow}>6-7 → STANDS</div><div style={styles.ruleBlue}>8-9 → NATURAL</div></div>
+  <div style={styles.panel}><p style={{color:"#d1d5db",fontSize:14}}><strong style={{color:"#fff"}}>"5 and under hits. 6-7 stands."</strong></p></div>
+</div>;}
+
+function L4(){return <div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>🏦 Banker Third Card</h3>
+    <div style={styles.ruleBlue}><strong>If Player Stands:</strong> Banker draws 0-5, stands 6-7</div>
+    <div style={styles.ruleRed}><strong>If Player Draws:</strong> Use chart ↓</div></div>
+  <div style={styles.panel}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}><thead><tr><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#d1d5db"}}>Banker</th><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#86efac"}}>Draws</th><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#fca5a5"}}>Stands</th></tr></thead><tbody>
+    {[["0, 1, 2","ALWAYS draws","Never stands"],["3","0-7, 9","8 only"],["4","2-7","0, 1, 8, 9"],["5","4-7","0-3, 8, 9"],["6","6-7","0-5, 8, 9"],["7","NEVER draws","Always stands"]].map((r,i)=><tr key={i}><td style={{padding:8,border:"1px solid #4b5563",color:"#fff",fontWeight:700}}>{r[0]}</td><td style={{padding:8,border:"1px solid #4b5563",color:"#86efac"}}>{r[1]}</td><td style={{padding:8,border:"1px solid #4b5563",color:"#fca5a5"}}>{r[2]}</td></tr>)}
+  </tbody></table></div>
+  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:16,fontWeight:700,marginBottom:10}}>🧠 Shrinking Window</h3>
+    <p style={{color:"#d1d5db",fontSize:13,marginBottom:10}}>As Banker's total goes up, the draw range gets <strong style={{color:"#fff"}}>smaller</strong>:</p>
+    <div style={{background:"#2d3748",borderRadius:8,padding:12,marginBottom:10}}>
+      {[["Banker 3:","Draws on 0,1,2,3,4,5,6,7,9","(only exception: 8)"],["Banker 4:","Draws on 2,3,4,5,6,7","(drops 0, 1, 8, 9)"],["Banker 5:","Draws on 4,5,6,7","(drops 0-3, 8, 9)"],["Banker 6:","Draws on 6,7 only","(tightest window)"]].map((r,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<3?8:0}}><span style={{color:"#fff",fontWeight:700,width:80}}>{r[0]}</span><span style={{color:"#86efac"}}>{r[1]}</span><span style={{color:"#fca5a5",fontSize:12}}>{r[2]}</span></div>)}
+    </div>
+    <p style={{color:"#facc15",fontSize:13,fontWeight:600}}>💡 Banker 3 draws on everything except 8. Then the window shrinks by 2 each step.</p>
+  </div>
+</div>;}
+
+function L5(){return <div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:12}}>💰 Payouts</h3>
+    <div style={styles.ruleGreen}>Player wins: Pays 1 to 1 (even money)</div><div style={styles.ruleYellow}>Banker wins: Pays 1 to 1 minus 5% commission</div><div style={styles.ruleBlue}>Tie: Pays 8 to 1. Player and Banker bets push.</div></div>
+  <div style={styles.panel}><h3 style={{color:"#f87171",fontSize:16,fontWeight:700,marginBottom:8}}>🧮 5% Commission: Divide by 20</h3>
+    <div style={styles.exRow}><strong style={{color:"#fff"}}>$25 bet:</strong><span style={{color:"#d1d5db"}}>$1.25 commission → pays $23.75</span></div>
+    <div style={styles.exRow}><strong style={{color:"#fff"}}>$100 bet:</strong><span style={{color:"#d1d5db"}}>$5.00 commission → pays $95.00</span></div></div>
+</div>;}
+
+const LM={1:L1,2:L2,3:L3,4:L4,5:L5,7:L4};
+
+/* QUIZ GENERATORS */
+function g1(){const qs=[];for(let i=0;i<10;i++){const cards=i>6?[rc(),rc(),rc()]:[rc(),rc()];const t=ht(cards);const opts=[t];while(opts.length<4){const n=Math.floor(Math.random()*10);if(!opts.includes(n))opts.push(n);}qs.push({cards,correct:t,options:shuf(opts),q:"Hand total?"});}return qs;}
+function g2(){const qs=[];for(let i=0;i<10;i++){const pC=rh(),bC=rh(),pT=ht(pC),bT=ht(bC);if(pT>=8||bT>=8)qs.push({pCards:pC,bCards:bC,q:"What happens?",correct:"Natural",options:["Natural","Player draws","Player stands","Both draw"]});else if(pT>=6)qs.push({pCards:pC,bCards:bC,q:"Player has "+pT+"?",correct:"STANDS",options:["STANDS","DRAWS","Natural","Both stand"]});else qs.push({pCards:pC,bCards:bC,q:"Player has "+pT+"?",correct:"DRAWS",options:["STANDS","DRAWS","Natural","Both stand"]});}return qs;}
+function g3(){const qs=[];for(let i=0;i<10;i++){let pC=rh(),pT=ht(pC);while(pT>=8){pC[1]=rc();pT=ht(pC);}qs.push({pCards:pC,q:"Player "+pT+". Draw or stand?",correct:pT<=5?"DRAW":"STAND",options:["DRAW","STAND"]});}return qs;}
+
+function g4Beg(){
+  return shuf([
+    {bTotal:0,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player's third card."},
+    {bTotal:1,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player's third card."},
+    {bTotal:2,pThird:{rank:"K",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws, even when the Player's third card is a King (value 0)."},
+    {bTotal:7,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player's third card is."},
+    {bTotal:7,pThird:{rank:"2",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player's third card is."},
+    {bTotal:3,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0-5 draws, 6-7 stand."},
+    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0-5 draws."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"If Player stands, 6 and 7 stand."},
+    {bTotal:7,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"If Player stands, 6 and 7 stand."},
+    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws."},
+  ]);
+}
+function g4Adv(){
+  return shuf([
+    {bTotal:3,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8."},
+    {bTotal:3,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 3: the one exception is 8."},
+    {bTotal:4,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7."},
+    {bTotal:4,pThird:{rank:"9",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7. 9 is outside."},
+    {bTotal:5,pThird:{rank:"6",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7."},
+    {bTotal:5,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 2 is below."},
+    {bTotal:6,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only on 6-7."},
+    {bTotal:6,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 6 draws only on 6-7. 4 is outside."},
+    {bTotal:3,pThird:{rank:"9",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8. 9 is not 8."},
+    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7. 2 is the lower boundary."},
+    {bTotal:5,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 7 is the upper boundary."},
+    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws on 6-7."},
+    {bTotal:4,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Player stands → simple rule: 0-5 draws."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Player stands → simple rule: 6-7 stand."},
+    {bTotal:5,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 8 is above."},
+  ]);
+}
+function g4Exp(){
+  return shuf([
+    {bTotal:3,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B3 draws all EXCEPT 8."},
+    {bTotal:3,pThird:{rank:"K",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"K=0, not 8."},
+    {bTotal:6,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B6 only draws 6-7."},
+    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"6 in 6-7."},
+    {bTotal:4,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"A=1, outside 2-7."},
+    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"2 in 2-7."},
+    {bTotal:5,pThird:{rank:"3",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"3 below 4-7."},
+    {bTotal:5,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"4 in 4-7."},
+    {bTotal:7,pThird:{rank:"3",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B7 ALWAYS stands."},
+    {bTotal:3,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"9 not 8."},
+    {bTotal:4,pThird:{rank:"10",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"10=0, outside 2-7."},
+    {bTotal:6,pThird:{rank:"7",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"7 in 6-7."},
+    {bTotal:5,pThird:{rank:"J",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"J=0, outside 4-7."},
+    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"B0-2 ALWAYS draws."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Player stands → 6-7 stands."},
+    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Player stands → 0-5 draws."},
+    {bTotal:4,pThird:{rank:"8",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"8 above 2-7."},
+    {bTotal:6,pThird:{rank:"Q",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Q=0, outside 6-7."},
+    {bTotal:3,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"A=1, not 8."},
+    {bTotal:5,pThird:{rank:"7",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"7 in 4-7."},
+  ]);
+}
+function g5(){const qs=[];const amts=[20,25,50,75,100,150,200,250,500,1000];for(let i=0;i<10;i++){const b=amts[i],p=b-b*0.05,cm=b*0.05;const opts=[p];while(opts.length<4){const w=p+(Math.floor(Math.random()*6)-3)*2.5;if(w>0&&!opts.includes(w))opts.push(parseFloat(w.toFixed(2)));else{const w2=parseFloat((p+5).toFixed(2));if(!opts.includes(w2))opts.push(w2);}}const cmStr=cm%1===0?"$"+cm:"$"+cm.toFixed(2);const pStr=p%1===0?"$"+p:"$"+p.toFixed(2);qs.push({q:"Banker wins. Bet is $"+b+". Payout?",correct:"$"+(p%1===0?p:p.toFixed(2)),options:shuf(opts).map(v=>"$"+(v%1===0?v:v.toFixed(2))),trap:"$"+b+" × 0.05 = "+cmStr+". Payout = $"+b+" - "+cmStr+" = "+pStr});}return qs;}
+function g7(){return shuf(g4Exp()).slice(0,2);}
+const GENS={1:g1,2:g2,3:g3,5:g5,7:g7};
+
+function MistakeDetail({m}){
+  const[open,setO]=useState(false);
+  return <div style={{marginBottom:10,borderRadius:8,background:"#111827",border:"1px solid #374151",overflow:"hidden",cursor:"pointer"}}>
+    <div onClick={()=>setO(!open)} style={{padding:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{flex:1,fontSize:13}}><p style={{color:"#d1d5db"}}><strong>Q:</strong> {m.q}</p><div style={{display:"flex",gap:16,marginTop:4}}><span style={{color:"#f87171"}}>You: {m.userAnswer}</span><span style={{color:"#4ade80"}}>Correct: {m.correct}</span></div></div>
+      <div style={{fontSize:18,color:"#9ca3af",transition:"transform 0.2s",transform:open?"rotate(180deg)":"rotate(0)"}}>▼</div>
+    </div>
+    {open&&<div style={{padding:"0 12px 14px",borderTop:"1px solid #374151",paddingTop:10}}>
+      {m.cards&&<div style={{display:"flex",gap:4,marginBottom:8}}>{m.cards.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}</div>}
+      {m.bTotal!==undefined&&m.pThird&&<div style={{marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,padding:8,background:"#2d3748",borderRadius:6}}><span style={{color:"#60a5fa",fontWeight:700,fontSize:12,minWidth:110}}>Player 3rd Card:</span><Card rank={m.pThird.rank} suit={m.pThird.suit} size="sm"/><span style={{color:"#d1d5db",fontSize:13,fontWeight:700}}>{"= "+CV[m.pThird.rank]}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:8,background:"#2d3748",borderRadius:6}}><span style={{color:"#e88a8a",fontWeight:700,fontSize:12,minWidth:110}}>Banker Total:</span><span style={{color:"#fff",fontSize:18,fontWeight:800}}>{m.bTotal}</span></div>
+      </div>}
+      {m.trap&&<p style={{color:"#fbbf24",fontStyle:"italic",fontSize:13}}>{"💡 "+m.trap}</p>}
+    </div>}
+  </div>;
+}
+
+/* TRAINING PAGE */
+function TrainingPage({goHome}){
+  const[mode,setMode]=useState("menu");
+  const[cur,setCur]=useState(null);
+  const[quiz,setQuiz]=useState([]);
+  const[qi,setQi]=useState(0);
+  const[sel,setSel]=useState(null);
+  const[fb,setFb]=useState(false);
+  const[score,setScore]=useState(0);
+  const[mist,setMist]=useState([]);
+  const[diff,setDiff]=useState(null);
+
+  function go(gen){setQuiz(gen());setQi(0);setSel(null);setFb(false);setScore(0);setMist([]);setMode("quiz");}
+  function startQ(id,d){
+    if(id===4){if(d==="beginner")go(g4Beg);else if(d==="advanced")go(g4Adv);else go(g4Exp);}
+    else{const gen=GENS[id];if(gen)go(gen);}
+  }
+  function ans(a){if(fb)return;setSel(a);setFb(true);if(String(a)===String(quiz[qi].correct))setScore(s=>s+1);else setMist(m=>[...m,{...quiz[qi],userAnswer:a}]);}
+  function nxt(){if(qi<quiz.length-1){setQi(q=>q+1);setSel(null);setFb(false);}else setMode("result");}
+  const ok=fb&&String(sel)===String(quiz[qi]?.correct);
+  const tot=quiz.length||10;
+
+  if(mode==="menu")return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#60a5fa"}}>🧠 Training Modules</div><div style={{minWidth:100}}/></div>
+    <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+      {MODULES.map(m=><button key={m.id} style={styles.modItem} onClick={()=>{setCur(m.id);setDiff(null);setMode("learn");}}>
+        <div style={{fontSize:28}}>{m.icon}</div><div><div style={{fontWeight:700,color:m.id===7?"#facc15":"#fff"}}>{m.title}</div><div style={{color:"#9ca3af",fontSize:13}}>{m.desc}</div></div>
+      </button>)}
+    </div></div></div>;
+
+  const mi=MODULES.find(m=>m.id===cur);
+  const LC=LM[cur];
+
+  if(mode==="learn")return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+    <div style={styles.topBar}><div style={{minWidth:100}}/><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:cur===7?"#facc15":"#fff"}}>{mi?.icon+" "+mi?.title}</div><div style={{minWidth:100}}/></div>
+    <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+      {LC&&<LC/>}
+      {cur!==4&&<div style={{textAlign:"center",marginTop:20}}>
+        <button style={{...styles.btn,background:"#d97706",color:"#000",fontSize:15,padding:"12px 28px",width:300}} onClick={()=>startQ(cur)}>Take the Quiz →</button>
+      </div>}
+      {cur===4&&<div style={{...styles.panel,marginTop:20}}>
+        <p style={{color:"#d1d5db",fontSize:15,fontWeight:600,marginBottom:14,textAlign:"center"}}>Select Difficulty</p>
+        <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+          {[["beginner","🟢 Beginner","10 questions","#2563eb"],["advanced","🟡 Advanced","15 questions","#d97706"],["expert","🔴 Expert","20 trick questions","#dc2626"]].map(([d,label,sub,bg])=>
+            <button key={d} style={{flex:1,padding:"12px 20px",borderRadius:10,border:diff===d?"2px solid #fff":"2px solid transparent",cursor:"pointer",fontWeight:700,fontSize:14,textAlign:"center",minWidth:100,background:diff===d?bg:"#374151",color:"#fff"}} onClick={()=>setDiff(d)}>
+              <div>{label}</div><div style={{fontSize:11,fontWeight:400,marginTop:2,color:"#94a3b8"}}>{sub}</div>
+            </button>)}
+        </div>
+        {diff&&<div style={{textAlign:"center",marginTop:14}}><button style={{...styles.btn,background:"#d97706",color:"#000",padding:"10px 28px",fontSize:15}} onClick={()=>startQ(4,diff)}>Start {diff.charAt(0).toUpperCase()+diff.slice(1)} Quiz →</button></div>}
+      </div>}
+      <div style={{textAlign:"center",marginTop:24,marginBottom:20}}><button style={{...styles.btn,background:"#2563eb",color:"#fff",padding:"12px 28px",fontSize:15,width:300}} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Back to Training Modules</button></div>
+    </div></div></div>;
+
+  if(mode==="quiz"&&quiz.length>0)return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={()=>setMode("learn")}>← Back</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700}}>{mi?.icon+" "+(cur===4&&diff?(diff.charAt(0).toUpperCase()+diff.slice(1)):"Quiz")}</div><div style={{minWidth:100}}/></div>
+    <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+      <div style={{marginBottom:14}}><PBar current={qi+1} total={tot} label={"Question "+(qi+1)+" of "+tot+" | Score: "+score+"/"+(qi+(fb?1:0))}/></div>
+      <div style={styles.panel}>
+        {quiz[qi].cards&&<div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:14}}>{quiz[qi].cards.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}</div>}
+        {quiz[qi].pCards&&<div style={{marginBottom:10}}>
+          <div style={styles.exRow}><span style={{color:"#9ca3af",width:50}}>Player:</span><div style={{display:"flex",gap:4}}>{quiz[qi].pCards.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}</div></div>
+          {quiz[qi].bCards&&<div style={styles.exRow}><span style={{color:"#9ca3af",width:50}}>Banker:</span><div style={{display:"flex",gap:4}}>{quiz[qi].bCards.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}</div></div>}
+        </div>}
+        {quiz[qi].bTotal!==undefined&&!quiz[qi].pCards&&<div style={{display:"flex",gap:12,marginBottom:14,alignItems:"stretch"}}>
+          <div style={{flex:1,background:"rgba(37,99,235,0.12)",border:"1px solid rgba(96,165,250,0.3)",borderRadius:10,padding:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player's 3rd Card</div>
+            {quiz[qi].pThird
+              ? <React.Fragment><Card rank={quiz[qi].pThird.rank} suit={quiz[qi].pThird.suit}/><div style={{fontSize:22,fontWeight:800,color:"#60a5fa"}}>{"= "+CV[quiz[qi].pThird.rank]}</div></React.Fragment>
+              : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{width:64,minHeight:88,borderRadius:8,border:"2px dashed rgba(96,165,250,0.4)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(37,99,235,0.08)"}}><span style={{fontSize:24,color:"rgba(96,165,250,0.5)"}}>{"—"}</span></div><div style={{fontSize:13,fontWeight:700,color:"#60a5fa",letterSpacing:1}}>STOOD</div></div>}
+          </div>
+          <div style={{flex:1,background:"rgba(232,138,138,0.12)",border:"1px solid rgba(232,138,138,0.3)",borderRadius:10,padding:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:2,color:"#e88a8a",fontWeight:700}}>Banker Total</div>
+            <div style={{fontSize:42,fontWeight:800,color:"#e88a8a"}}>{quiz[qi].bTotal}</div>
+          </div>
+        </div>}
+        <p style={{fontSize:16,fontWeight:600,textAlign:"center",marginBottom:14}}>{quiz[qi].q}</p>
+        {quiz[qi].options.map((o,i)=>{const s=String(o),c=String(quiz[qi].correct),sl=String(sel);
+          let st={...styles.quizOpt};
+          if(fb){if(s===c)st={...st,borderColor:"#22c55e",background:"rgba(34,197,94,0.15)"};else if(s===sl)st={...st,borderColor:"#ef4444",background:"rgba(239,68,68,0.15)"};else st={...st,opacity:0.4};}
+          return <button key={i} style={st} onClick={()=>ans(s)} disabled={fb}>{s}</button>;})}
+        {fb&&<div style={{padding:12,borderRadius:8,marginTop:12,border:"1px solid",borderColor:ok?"#166534":"#7f1d1d",background:ok?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.15)",fontSize:14}}>
+          <p style={{fontWeight:700}}>{ok?"✅ Correct!":"❌ Incorrect"}</p>
+          {!ok&&<p style={{marginTop:4,color:"#d1d5db"}}>Correct: <strong style={{color:"#4ade80"}}>{quiz[qi].correct}</strong></p>}
+          {quiz[qi].trap&&<p style={{marginTop:6,color:ok?"#86efac":"#fbbf24",fontStyle:"italic"}}>{"💡 "+quiz[qi].trap}</p>}
+        </div>}
+        {fb&&<button style={{...styles.btn,background:"#2563eb",color:"#fff",width:"100%",marginTop:12,padding:12}} onClick={nxt}>{qi<tot-1?"Next Question →":"See Results"}</button>}
+      </div>
+    </div></div></div>;
+
+  if(mode==="result")return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Modules</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700}}>{cur===4&&diff?(diff.charAt(0).toUpperCase()+diff.slice(1)+" Results"):"Results"}</div><div style={{minWidth:100}}/></div>
+    <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+      <div style={{padding:"36px 20px",borderRadius:16,textAlign:"center",border:"2px solid",borderColor:score===tot?"#16a34a":"#3b82f6",background:score===tot?"rgba(20,83,45,0.15)":"rgba(30,58,138,0.15)",marginTop:20}}>
+        <div style={{fontSize:48}}>{score===tot?"🤟":"📊"}</div>
+        <h3 style={{fontSize:22,fontWeight:700,margin:"8px 0"}}>{score===tot?"Perfect Score!":"Quiz Complete"}</h3>
+        <p style={{fontSize:36,fontWeight:700,color:score===tot?"#4ade80":"#60a5fa"}}>{score+"/"+tot}</p>
+      </div>
+      {mist.length>0&&<div style={{...styles.panel,marginTop:20}}><h4 style={{color:"#f87171",fontWeight:700,marginBottom:6}}>The Correct Solution ({mist.length}):</h4><p style={{color:"#9ca3af",fontSize:13,marginBottom:10}}>Tap to expand.</p>
+        {mist.map((m,i)=><MistakeDetail key={i} m={m}/>)}
+      </div>}
+      <div style={{display:"flex",gap:10,marginTop:20}}>
+        <button style={{...styles.btn,background:"#374151",color:"#fff",flex:1,padding:12}} onClick={()=>setMode("learn")}>📖 Review</button>
+        <button style={{...styles.btn,background:"#d97706",color:"#000",flex:1,padding:12}} onClick={()=>{if(cur===4&&diff)startQ(4,diff);else startQ(cur);}}>🔄 Retake</button>
+      </div>
+      <button style={{...styles.btn,background:"#2563eb",color:"#fff",width:"100%",padding:12,marginTop:10}} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Back to Modules</button>
+    </div></div></div>;
+  return null;
+}
+
+/* SIMULATOR PAGE */
+function genBet(){
+  const amounts=[25,50,75,100,150,200,250,500];
+  const pick=amounts[Math.floor(Math.random()*amounts.length)];
+  const r=Math.random();
+  if(r<0.4)return{type:"Player",amount:pick,tie:0};
+  if(r<0.8)return{type:"Banker",amount:pick,tie:0};
+  if(r<0.9){const ta=Math.min(25,pick);return{type:"Player",amount:pick,tie:ta};}
+  if(r<0.95){const ta=Math.min(25,pick);return{type:"Banker",amount:pick,tie:ta};}
+  return{type:null,amount:0,tie:Math.min(25,pick)};
+}
+
+function SimPage({goHome}){
+  const[shoe,setShoe]=useState(()=>mkShoe());
+  const[pC,setPC]=useState([]);
+  const[bC,setBC]=useState([]);
+  const[pTh,setPTh]=useState(null);
+  const[bTh,setBTh]=useState(null);
+  const[ph,setPh]=useState("ready");
+  const[bet,setBet]=useState(null);
+  const[wrn,setWrn]=useState([]);
+  const[hErr,setHE]=useState(0);
+  const[st,setSt]=useState({h:0,p:0,e:0});
+  const[comm,setCm]=useState(0);
+  const[pOps,setPOps]=useState([]);
+
+  function drw(){let s=shoe.slice();if(s.length<10)s=mkShoe();const c=s.pop();setShoe(s);return c;}
+  function aw(m){setWrn(w=>[...w,{msg:m}]);setHE(e=>e+1);}
+
+  function deal(){
+    let s=shoe.slice();if(s.length<20)s=mkShoe();
+    const c1=s.pop(),c2=s.pop(),c3=s.pop(),c4=s.pop();setShoe(s);
+    const b=genBet();setBet(b);
+    setPC([c1,c3]);setBC([c2,c4]);setPTh(null);setBTh(null);
+    setWrn([]);setHE(0);setPh("pa");
+  }
+
+  const pT=ht(pC),bT=ht(bC);
+  const isN=pC.length===2&&bC.length===2&&(pT>=8||bT>=8);
+
+  function hP(a){
+    if(isN){
+      if(a==="nat-x"){aw("⚠️ It IS a Natural, but who wins?");return;}
+      const natW=pT>bT?"Player":bT>pT?"Banker":"Tie";
+      if(a==="nat-p"){if(natW==="Player"){setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both Naturals! This is a Tie.");else aw("⚠️ Banker wins, not Player.");}
+      else if(a==="nat-b"){if(natW==="Banker"){setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both Naturals! This is a Tie.");else aw("⚠️ Player wins, not Banker.");}
+      else if(a==="nat-t"){if(natW==="Tie"){setPOps(bldO());setPh("po");}else aw("⚠️ Not a Tie. "+natW+" wins.");}
+      else aw("⚠️ "+(pT>=8?"Player":"Banker")+" has "+(pT>=8?pT:bT)+" — NATURAL!");
+      return;
+    }
+    if(a==="nat-x"||a==="nat-p"||a==="nat-b"){aw("⚠️ Not Natural. P:"+pT+" B:"+bT);return;}
+    if(pT<=5){if(a==="draw"){setPTh(drw());setPh("ba");}else aw("⚠️ Player "+pT+" must DRAW.");}
+    else{if(a==="stand")setPh("ba");else aw("⚠️ Player "+pT+" must STAND.");}
+  }
+  function hB(a){
+    let sd;if(pTh===null)sd=bT<=5;else{if(bT<=2)sd=true;else if(bT===7)sd=false;else sd=bd(bT,pTh.rank);}
+    if(a==="draw"&&sd){setBTh(drw());setPh("cw");}
+    else if(a==="stand"&&!sd)setPh("cw");
+    else if(a==="draw")aw("⚠️ Banker "+bT+" should STAND."+(pTh===null?" (Player stands → simple rule)":""));
+    else aw("⚠️ Banker "+bT+" should DRAW."+(pTh===null?" (Player stands → simple rule)":""));
+  }
+  function gF(){let fP=pT,fB=bT;if(pTh){let s=0;for(let i=0;i<pC.length;i++)s+=CV[pC[i].rank];fP=(s+CV[pTh.rank])%10;}if(bTh){let s2=0;for(let i=0;i<bC.length;i++)s2+=CV[bC[i].rank];fB=(s2+CV[bTh.rank])%10;}return{fp:fP,fb:fB};}
+  const fn=gF(),fp=fn.fp,fb2=fn.fb;
+  function fmt(v){const a=Math.abs(v),s=a%1===0?String(a):a.toFixed(2);return v<0?"-$"+s:"$"+s;}
+  function cP(){
+    if(!bet)return{pay:0,d:"",cm:0};
+    const w=fp>fb2?"Player":fb2>fp?"Banker":"Tie";
+    let mainPay=0,mainCm=0,mainDesc="";
+    if(bet.type&&bet.amount>0){
+      if(w==="Tie"){mainPay=0;mainDesc="Main bet pushes (Tie)";}
+      else if(bet.type===w){if(w==="Banker"){mainCm=bet.amount*0.05;mainPay=bet.amount-mainCm;mainDesc="Banker wins -5%";}else{mainPay=bet.amount;mainDesc="Player wins 1:1";}}
+      else{mainPay=-bet.amount;mainDesc=bet.type+" loses";}
+    }
+    let tiePay=0,tieDesc="";
+    if(bet.tie>0){if(w==="Tie"){tiePay=bet.tie*8;tieDesc="Tie wins 8:1";}else{tiePay=-bet.tie;tieDesc="Tie loses";}}
+    return{pay:mainPay+tiePay,d:mainDesc+(tieDesc?(". "+tieDesc):""),cm:mainCm};
+  }
+  function bldO(){
+    const cp=cP(),cv=fmt(cp.pay);if(!bet)return[cv];
+    const tb=(bet.amount||0)+(bet.tie||0);
+    let arr=[cv,fmt(tb),fmt(-tb)];
+    if(bet.amount>0)arr.push(fmt(bet.amount-bet.amount*0.05),fmt(bet.amount),fmt(-bet.amount));
+    if(bet.tie>0)arr.push(fmt(bet.tie*8));
+    arr.push(fmt(0));
+    const u=[],sn={};for(const v of arr){if(!sn[v]){u.push(v);sn[v]=true;}}
+    while(u.length<4)u.push(fmt(Math.floor(Math.random()*tb*2)));
+    const r=u.slice(0,4);if(!r.includes(cv))r[r.length-1]=cv;return shuf(r);
+  }
+  function hW(pick){const actual=fp>fb2?"Player":fb2>fp?"Banker":"Tie";if(pick===actual){setPOps(bldO());setPh("po");}else aw("⚠️ P:"+fp+" B:"+fb2+". Winner is "+actual+".");}
+  function hPay(pk){
+    const cp=cP(),cv=fmt(cp.pay);
+    if(pk.replace(/\s/g,"")===cv.replace(/\s/g,"")){
+      setCm(c=>c+cp.cm);
+      setSt(s=>({h:s.h+1,p:s.p+(hErr===0?1:0),e:s.e+hErr}));setPh("done");
+    }else aw("⚠️ Payout error: "+cp.d+". Correct answer is: "+cv);
+  }
+  function rT(cards,third){if(cards.length<2)return null;if(third){let s=0;for(let i=0;i<cards.length;i++)s+=CV[cards[i].rank];return(s+CV[third.rank])%10;}return ht(cards);}
+
+  const base={minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"};
+  const bacTable={position:"relative",background:"linear-gradient(180deg,#14532d,#1a6b35)",border:"4px solid #d4a017",borderRadius:"180px 180px 20px 20px",padding:"20px 16px 16px",marginBottom:16,boxShadow:"inset 0 0 40px rgba(0,0,0,0.3),0 4px 20px rgba(0,0,0,0.4)"};
+
+  function betLabel(){
+    if(!bet)return null;
+    const parts=[];
+    if(bet.type&&bet.amount>0)parts.push({text:"$"+bet.amount,col:bet.type==="Player"?"#60a5fa":"#e88a8a",label:bet.type});
+    if(bet.tie>0)parts.push({text:"$"+bet.tie,col:"#4ade80",label:"Tie"});
+    return parts;
+  }
+
+  return <div style={base}>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#4ade80"}}>🎰 Dealer Simulator</div><div style={{minWidth:100}}/></div>
+    <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+
+    <div style={styles.statsBar}>
+      {[["Hands",st.h,"#fff"],["Perfect",st.p,"#4ade80"],["Errors",st.e,"#f87171"],["Commission Owed","$"+(comm%1===0?comm:comm.toFixed(2)),"#d4a017"]].map(([l,v,c])=>
+        <div key={l}><div style={{color:"#9ca3af",fontSize:13}}>{l}</div><div style={{fontSize:20,fontWeight:700,color:c}}>{v}</div></div>)}
+    </div>
+
+    {ph==="ready"&&<div>
+      <div style={bacTable}>
+        <div style={{display:"flex",justifyContent:"space-around",padding:"10px 20px 16px",minHeight:130}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#60a5fa",fontWeight:700}}>Player</div></div>
+          <div style={{width:1,background:"rgba(212,160,23,0.2)"}}/>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#e88a8a",fontWeight:700}}>Banker</div></div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderTop:"2px solid rgba(212,160,23,0.3)",marginTop:8}}>
+          {["Player","Tie","Banker"].map((z,zi)=>{
+            const col=z==="Player"?"#60a5fa":z==="Banker"?"#e88a8a":"#4ade80";
+            return <div key={z} style={{padding:"16px 8px",textAlign:"center",minHeight:80,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,borderLeft:zi===2?"1px solid rgba(212,160,23,0.2)":"none",borderRight:zi===0?"1px solid rgba(212,160,23,0.2)":"none"}}>
+              <div style={{fontSize:14,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:col}}>{z}</div>
+              <div style={{width:60,height:60,borderRadius:"50%",border:"2px dashed rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}/>
+            </div>;})}
+        </div>
+      </div>
+      <div style={{textAlign:"center",marginTop:12}}>
+        <button style={{...styles.btn,background:"linear-gradient(90deg,#eab308,#d97706)",color:"#000",padding:"14px 40px",fontSize:17}} onClick={deal}>Deal Hand</button>
+      </div>
+    </div>}
+
+    {bet&&ph!=="ready"&&ph!=="done"&&<div>
+      <div style={bacTable}>
+        <div style={{display:"flex",justifyContent:"space-around",padding:"10px 20px 16px",minHeight:130}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#60a5fa",fontWeight:700}}>Player</div>
+            <div style={{display:"flex",gap:4,justifyContent:"center"}}>{pC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{pTh&&<div style={{marginLeft:6,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:6}}><Card rank={pTh.rank} suit={pTh.suit}/></div>}</div>
+            {pC.length===2&&<div style={{fontSize:26,fontWeight:800,color:"#60a5fa",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(pC,pTh)}</div>}
+          </div>
+          <div style={{width:1,background:"rgba(212,160,23,0.2)"}}/>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#e88a8a",fontWeight:700}}>Banker</div>
+            <div style={{display:"flex",gap:4,justifyContent:"center"}}>{bC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{bTh&&<div style={{marginLeft:6,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:6}}><Card rank={bTh.rank} suit={bTh.suit}/></div>}</div>
+            {bC.length===2&&<div style={{fontSize:26,fontWeight:800,color:"#e88a8a",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(bC,bTh)}</div>}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderTop:"2px solid rgba(212,160,23,0.3)",marginTop:8}}>
+          {["Player","Tie","Banker"].map((z,zi)=>{
+            const isTie=z==="Tie";
+            const isA=isTie?(bet.tie>0):(bet.type===z);
+            const chipAmt=isTie?bet.tie:((bet.type===z)?bet.amount:0);
+            const col=z==="Player"?"#60a5fa":z==="Banker"?"#e88a8a":"#4ade80";
+            const chipBg=z==="Player"?"#2563eb":z==="Banker"?"#dc2626":"#16a34a";
+            return <div key={z} style={{padding:"16px 8px",textAlign:"center",minHeight:80,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:isA?"rgba(255,255,255,0.06)":"transparent",borderLeft:zi===2?"1px solid rgba(212,160,23,0.2)":"none",borderRight:zi===0?"1px solid rgba(212,160,23,0.2)":"none"}}>
+              <div style={{fontSize:14,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:col}}>{z}</div>
+              <div style={{width:60,height:60,borderRadius:"50%",border:isA?"2px solid rgba(212,160,23,0.5)":"2px dashed rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {isA&&chipAmt>0&&<div style={{width:50,height:50,borderRadius:"50%",background:chipBg,border:"3px solid rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:11,color:"#fff",boxShadow:"0 2px 8px rgba(0,0,0,0.4)"}}>{"$"+chipAmt}</div>}
+              </div>
+            </div>;})}
+        </div>
+      </div>
+      <div style={{textAlign:"center",marginBottom:12,display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+        {betLabel()&&betLabel().map((b,i)=><div key={i} style={{display:"inline-block",padding:"8px 16px",borderRadius:8,fontSize:14,fontWeight:700,color:b.col,background:"rgba(0,0,0,0.3)",border:"1px solid "+b.col}}>{b.label+" Bets "+b.text}</div>)}
+      </div>
+    </div>}
+
+    {wrn.map((w,i)=><div key={i} style={styles.warnBox}>{w.msg}</div>)}
+
+    {ph==="pa"&&<div style={{marginTop:12}}>
+      {isN?<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hP("nat-p")}>Natural — Player</button>
+          <button style={{...styles.btn,background:"#16a34a",color:"#fff"}} onClick={()=>hP("nat-t")}>Natural — Tie</button>
+          <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hP("nat-b")}>Natural — Banker</button>
+        </div>
+      </div>:<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hP("draw")}>Player Draws</button>
+          <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hP("stand")}>Player Stands</button>
+        </div>
+        <div style={{marginTop:8}}><button style={{...styles.btn,background:"#d97706",color:"#000",width:"100%"}} onClick={()=>hP("nat-x")}>⭐ Natural</button></div>
+      </div>}
+    </div>}
+    {ph==="ba"&&<div style={{marginTop:12}}>
+      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:10,fontSize:15,fontWeight:600}}>{pTh?("Player draws: "+pTh.rank+pTh.suit+" (value "+CV[pTh.rank]+"). "):"Player stands. "}Banker has {bT}. Your call?</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hB("draw")}>Banker Draws</button>
+        <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hB("stand")}>Banker Stands</button>
+      </div>
+    </div>}
+    {ph==="cw"&&<div style={{marginTop:12}}>
+      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:10,fontSize:15,fontWeight:600}}>Final: Player {fp} vs Banker {fb2}. Who wins?</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+        <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hW("Player")}>Player</button>
+        <button style={{...styles.btn,background:"#16a34a",color:"#fff"}} onClick={()=>hW("Tie")}>Tie</button>
+        <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hW("Banker")}>Banker</button>
+      </div>
+    </div>}
+    {ph==="po"&&<div style={{marginTop:12}}>
+      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:6,fontSize:15,fontWeight:600}}>{(fp>fb2?"Player":fb2>fp?"Banker":"Tie")+" wins."}</p>
+      <div style={{textAlign:"center",marginBottom:4,display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+        {betLabel()&&betLabel().map((b,i)=><div key={i} style={{display:"inline-block",padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700,color:b.col,background:"rgba(0,0,0,0.3)",border:"1px solid "+b.col}}>{b.label+" Bets "+b.text}</div>)}
+      </div>
+      <p style={{textAlign:"center",color:"#9ca3af",marginBottom:12,fontSize:13}}>What is the net payout? (negative = collect from guest)</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pOps.map((o,i)=><button key={i} style={{...styles.btn,background:"#374151",color:"#fff",fontSize:16}} onClick={()=>hPay(o)}>{o}</button>)}</div>
+    </div>}
+    {ph==="done"&&<div style={{marginTop:12}}>
+      <div style={{padding:"24px 16px",borderRadius:16,textAlign:"center",border:"2px solid",borderColor:hErr===0?"#16a34a":"#d97706",background:hErr===0?"rgba(20,83,45,0.15)":"rgba(113,63,18,0.15)"}}>
+        <div style={{fontSize:36}}>{hErr===0?"🤟":"📋"}</div>
+        <h3 style={{fontSize:18,fontWeight:700,marginTop:6}}>{hErr===0?"Perfect!":"Complete"}</h3>
+        {hErr>0&&<p style={{color:"#fbbf24",marginTop:3,fontSize:13}}>{hErr+" error"+(hErr>1?"s":"")}</p>}
+        <p style={{color:"#9ca3af",fontSize:13,marginTop:6}}>{(()=>{const cp=cP();return(cp.pay>0?"Paid "+fmt(cp.pay):cp.pay<0?"Collected "+fmt(Math.abs(cp.pay)):"Push")+(cp.cm>0?" | Commission: "+fmt(cp.cm):"");})()}</p>
+      </div>
+      <button style={{...styles.btn,background:"linear-gradient(90deg,#eab308,#d97706)",color:"#000",width:"100%",padding:14,marginTop:16,fontSize:16}} onClick={()=>{setBet(null);setWrn([]);setPh("ready");}}>
+        Deal Next Hand
+      </button>
+    </div>}
+
+    </div></div></div>;
+}
+
+/* APP */
+function App(){
+  const[view,setV]=useState("home");
+  if(view==="home")return <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",minHeight:"100vh",padding:"60px 20px 20px",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+    <div style={{textAlign:"center",marginBottom:32}}>
+      <div style={{fontSize:48}}>🃏</div>
+      <h1 style={{fontSize:28,fontWeight:800,background:"linear-gradient(90deg,#fbbf24,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Baccarat Dealer Training App</h1>
+      <p style={{color:"#94a3b8",fontSize:14,marginTop:6}}>Master every rule. Deal with confidence.</p>
+    </div>
+    <div style={{display:"flex",gap:20,justifyContent:"center",flexWrap:"wrap"}}>
+      <div onClick={()=>setV("train")} style={{width:280,padding:"32px 24px",borderRadius:16,cursor:"pointer",textAlign:"center",border:"1px solid #334155",background:"linear-gradient(135deg,#1e3a5f,#162032)",transition:"all 0.3s"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🧠</div><div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#60a5fa"}}>Training Modules</div><div style={{fontSize:13,color:"#94a3b8",lineHeight:1.5}}>Learn rules step by step with quizzes.</div>
+      </div>
+      <div onClick={()=>setV("sim")} style={{width:280,padding:"32px 24px",borderRadius:16,cursor:"pointer",textAlign:"center",border:"1px solid #334155",background:"linear-gradient(135deg,#14532d,#0f2a18)",transition:"all 0.3s"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🤖</div><div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#4ade80"}}>Live Simulator</div><div style={{fontSize:13,color:"#94a3b8",lineHeight:1.5}}>Deal hands, place bets, handle payouts.</div>
+      </div>
+    </div>
+  </div>;
+  if(view==="train")return <TrainingPage goHome={()=>setV("home")}/>;
+  if(view==="sim")return <SimPage goHome={()=>setV("home")}/>;
+  return null;
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
