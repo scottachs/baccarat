@@ -1,4 +1,24 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Baccarat Dealer Training App</title>
+<style>
+  html, body { margin:0; padding:0; background:#0f172a; }
+  * { box-sizing: border-box; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState } = React;
 
 const SUITS = ["♠","♥","♦","♣"];
 const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
@@ -632,14 +652,12 @@ function SimPage({goHome}){
           const cp=cP();
           const winner=fp>fb2?"Player":fb2>fp?"Banker":"Tie";
           const parts=[];
-          // Explain Player action
           if(pTh){
             parts.push("Player had "+pT+" (0-5), so Player draws a third card: "+pTh.rank+pTh.suit+" (value "+CV[pTh.rank]+"). Final Player total: "+fp+".");
           }else{
             if(pT>=8)parts.push("Player had "+pT+" — a Natural. No more cards.");
             else parts.push("Player had "+pT+" (6-7), so Player stands.");
           }
-          // Explain Banker action
           if(bTh){
             if(pTh===null){
               parts.push("Player stood, so Banker uses the simple rule: 0-5 draws, 6-7 stands. Banker had "+bT+", so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
@@ -667,9 +685,7 @@ function SimPage({goHome}){
               else parts.push("Banker had "+bT+" and stands.");
             }
           }
-          // Result
           parts.push("Final: Player "+fp+" vs Banker "+fb2+" — "+winner+" wins.");
-          // Payout explanation
           if(bet.type&&bet.amount>0){
             if(winner==="Tie")parts.push(bet.type+" bet pushes (returned to guest).");
             else if(bet.type===winner){if(winner==="Banker"){const cm=bet.amount*0.05;parts.push("Banker bet wins. Pay $"+bet.amount+" minus 5% commission ($"+(cm%1===0?cm:cm.toFixed(2))+") = "+fmt(bet.amount-cm)+" to guest.");}else parts.push("Player bet wins. Pay "+fmt(bet.amount)+" to guest.");}
@@ -689,7 +705,7 @@ function SimPage({goHome}){
 }
 
 /* APP */
-export default function App(){
+function App(){
   const[view,setV]=useState("home");
   if(view==="home")return <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",minHeight:"100vh",padding:"60px 20px 20px",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
     <div style={{textAlign:"center",marginBottom:40}}>
@@ -717,3 +733,9 @@ export default function App(){
   if(view==="sim")return <SimPage goHome={()=>setV("home")}/>;
   return null;
 }
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
