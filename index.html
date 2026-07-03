@@ -1,24 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Baccarat Dealer Training App</title>
-<style>
-  html, body { margin:0; padding:0; background:#0f172a; }
-  * { box-sizing: border-box; }
-  #root { min-height: 100vh; }
-</style>
-</head>
-<body>
-<div id="root"></div>
-
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
-<script type="text/babel" data-presets="react">
-const { useState } = React;
+import { useState } from "react";
 
 const SUITS = ["♠","♥","♦","♣"];
 const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
@@ -33,8 +13,8 @@ function shuf(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.fl
 
 function Card({rank,suit,size="md"}){
   const isR=suit==="♥"||suit==="♦";
-  const sz=size==="sm"?{width:48,minHeight:64,fontSize:12}:{width:64,minHeight:88,fontSize:14};
-  return <div style={{...sz,borderRadius:8,border:"2px solid #d1d5db",display:"inline-flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",boxShadow:"0 2px 8px rgba(0,0,0,0.2)",fontWeight:700,color:isR?"#e53e3e":"#1a202c"}}><span>{rank}</span><span>{suit}</span></div>;
+  const sz=size==="sm"?{width:36,minHeight:50,fontSize:15}:{width:42,minHeight:58,fontSize:17};
+  return <div style={{...sz,borderRadius:5,border:"2px solid #d1d5db",display:"inline-flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.2)",fontWeight:800,color:isR?"#e53e3e":"#1a202c",gap:0,lineHeight:1.1,flexShrink:0}}><span>{rank}</span><span style={{fontSize:sz.fontSize-5}}>{suit}</span></div>;
 }
 
 function PBar({current,total,label}){
@@ -49,31 +29,30 @@ const styles = {
   ruleBlue:{padding:"10px 14px",borderRadius:8,marginBottom:8,fontSize:14,border:"1px solid #1e3a8a",background:"rgba(30,58,138,0.4)",color:"#bfdbfe"},
   exRow:{display:"flex",alignItems:"center",gap:12,padding:8,borderRadius:8,background:"#2d3748",marginBottom:8},
   btn:{padding:"10px 20px",borderRadius:10,border:"none",cursor:"pointer",fontWeight:700,fontSize:14,transition:"all 0.2s"},
-  quizOpt:{padding:12,borderRadius:8,border:"2px solid #4b5563",background:"#1f2937",cursor:"pointer",textAlign:"left",width:"100%",fontSize:14,color:"#fff",transition:"all 0.15s",marginBottom:8},
+  quizOpt:{padding:12,borderRadius:8,border:"2px solid #fff",background:"#1f2937",cursor:"pointer",textAlign:"left",width:"100%",fontSize:14,color:"#fff",transition:"all 0.15s",marginBottom:8},
   warnBox:{padding:12,borderRadius:8,marginBottom:10,border:"2px solid #dc2626",fontSize:13,background:"rgba(220,38,38,0.15)",color:"#fca5a5"},
-  topBar:{display:"flex",alignItems:"center",padding:"12px 20px",background:"#0f172a",borderBottom:"1px solid #1e293b"},
+  topBar:{display:"flex",alignItems:"center",padding:"12px 20px",paddingTop:50,background:"#0f172a",borderBottom:"1px solid #1e293b"},
   topBarLink:{color:"#9ca3af",fontSize:13,cursor:"pointer",minWidth:100,background:"none",border:"none"},
   modItem:{width:"100%",textAlign:"left",padding:16,borderRadius:12,border:"1px solid #4b5563",background:"#1e293b",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:16,marginBottom:10,color:"#fff"},
   statsBar:{display:"flex",justifyContent:"space-around",textAlign:"center",padding:12,flexWrap:"wrap",gap:8,background:"#1e293b",borderRadius:12,border:"1px solid #374151",marginBottom:16},
 };
 
 const MODULES=[
-  {id:1,title:"Card Values & Totals",icon:"\u{1F0CF}",desc:"How every card is valued in Baccarat"},
-  {id:2,title:"Naturals & Standing Rules",icon:"\u2B50",desc:"When the game stops immediately"},
-  {id:3,title:"Player Third Card Rule",icon:"\u{1F464}",desc:"Know when Player draws or stands"},
-  {id:4,title:"Banker Third Card Rule",icon:"\u{1F3E6}",desc:"3 difficulty levels: Beginner, Advanced, Expert"},
-  {id:5,title:"Payouts & Commission",icon:"\u{1F4B0}",desc:"5% commission, tie bets, procedures"},
-  {id:7,title:"Banker Quick Test",icon:"\u26A1",desc:"2-question speed drill"}
+  {id:1,title:"Card Values & Totals",icon:"1",desc:"How every card is valued in Baccarat",color:"#22d3ee",bg:"linear-gradient(135deg,#083344,#164e63)"},
+  {id:3,title:"Player Drawing Rules",icon:"P",desc:"Naturals, standing, and when Player draws",color:"#60a5fa",bg:"linear-gradient(135deg,#172554,#1e3a5f)"},
+  {id:4,title:"Banker Third Card Rule",icon:"B",desc:"3 difficulty levels: Beginner, Advanced, Expert",color:"#e88a8a",bg:"linear-gradient(135deg,#450a0a,#7f1d1d)"},
+  {id:5,title:"Payouts & Commission",icon:"5%",desc:"5% commission, tie bets, procedures",color:"#c084fc",bg:"linear-gradient(135deg,#2e1065,#4c1d95)"},
 ];
 
 function L1(){return <div>
-  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>🎯 Only the LAST digit matters</h3><p style={{color:"#d1d5db",fontSize:14}}>If cards add to 15 the value is <strong style={{color:"#fff"}}>5</strong>. Highest: <strong style={{color:"#fff"}}>9</strong>.</p></div>
-  <div style={styles.panel}><h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:12}}>📋 Card Values</h3>
+  <div style={styles.panel}><h3 style={{color:"#22d3ee",fontSize:18,fontWeight:700,marginBottom:10}}>The Goal of Baccarat</h3><p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6}}>Two hands are dealt each round: Player and Banker. The hand closest to a total of <strong style={{color:"#fff"}}>9</strong> wins. Guests bet on which hand will win, or if the result will be a Tie. As the dealer, your job is to deal the cards, apply the drawing rules, and handle payouts.</p></div>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>How Card Totals Work</h3><p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6}}>Add up the card values and only the <strong style={{color:"#fff"}}>last digit</strong> counts. For example, 7 + 8 = 15, so the hand total is <strong style={{color:"#fff"}}>5</strong>. The highest possible total is 9.</p></div>
+  <div style={styles.panel}><h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:12}}>Card Values</h3>
     <div style={styles.exRow}><Card rank="A" suit="♠" size="sm"/><span style={{color:"#d1d5db"}}>Ace = 1</span></div>
     <div style={styles.exRow}><Card rank="5" suit="♥" size="sm"/><Card rank="7" suit="♦" size="sm"/><span style={{color:"#d1d5db"}}>2-9 = Face Value</span></div>
     <div style={styles.exRow}><Card rank="K" suit="♠" size="sm"/><Card rank="10" suit="♣" size="sm"/><span style={{color:"#d1d5db"}}>10, J, Q, K = 0</span></div>
   </div>
-  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:18,fontWeight:700,marginBottom:12}}>✏️ Examples</h3>
+  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:18,fontWeight:700,marginBottom:12}}>Examples</h3>
     <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="7" suit="♠" size="sm"/><Card rank="5" suit="♥" size="sm"/></div><span style={{color:"#d1d5db"}}>7+5=12 → 2</span></div>
     <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="K" suit="♦" size="sm"/><Card rank="9" suit="♣" size="sm"/></div><span style={{color:"#d1d5db"}}>0+9 = Natural 9</span></div>
     <div style={styles.exRow}><div style={{display:"flex",gap:4}}><Card rank="6" suit="♥" size="sm"/><Card rank="4" suit="♠" size="sm"/></div><span style={{color:"#d1d5db"}}>6+4=10 → 0</span></div>
@@ -86,102 +65,128 @@ function L2(){return <div>
 </div>;}
 
 function L3(){return <div>
-  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>👤 Player Third Card</h3>
-    <div style={styles.ruleGreen}>0-5 → DRAWS</div><div style={styles.ruleYellow}>6-7 → STANDS</div><div style={styles.ruleBlue}>8-9 → NATURAL</div></div>
-  <div style={styles.panel}><p style={{color:"#d1d5db",fontSize:14}}><strong style={{color:"#fff"}}>"5 and under hits. 6-7 stands."</strong></p></div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:10}}>Why Player Rules Matter</h3>
+    <p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6}}>As the dealer, the Player hand is always acted on first. You must know immediately whether to draw a third card, stand, or announce a Natural. Getting this wrong delays the game and can lead to dealing errors. The Player rules are simpler than Banker rules, so mastering them first builds a strong foundation.</p>
+  </div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>Naturals: 8 or 9</h3>
+    <p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6,marginBottom:12}}>If either the Player or Banker has 8 or 9 on their first two cards, it is called a Natural. The hand is over immediately and no more cards are drawn for either side. As the dealer, you announce the Natural and proceed directly to determining the winner.</p>
+    <div style={styles.ruleGreen}>8 or 9 on first two cards = <strong>NATURAL</strong>. No more cards for either hand.</div>
+  </div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:10}}>Player Standing Rule: 6 or 7</h3>
+    <p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6,marginBottom:12}}>If the Player total is 6 or 7, the Player stands. No third card is drawn. This is important because when the Player stands, the Banker follows a simpler set of rules for their own third card decision.</p>
+    <div style={styles.ruleYellow}>Player has 6 or 7 = <strong>PLAYER STANDS</strong>. No third card.</div>
+  </div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#f87171",fontSize:18,fontWeight:700,marginBottom:10}}>Player Drawing Rule: 0 through 5</h3>
+    <p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6,marginBottom:12}}>If the Player total is 0 through 5, the Player must draw a third card. This third card is dealt face up and its value becomes critical for determining what the Banker does next.</p>
+    <div style={styles.ruleRed}>Player has 0 through 5 = <strong>PLAYER DRAWS</strong> a third card.</div>
+  </div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#facc15",fontSize:18,fontWeight:700,marginBottom:12}}>Quick Reference</h3>
+    <div style={styles.exRow}><strong style={{color:"#4ade80",minWidth:90}}>8 or 9</strong><span style={{color:"#d1d5db"}}>Natural. Hand is over. No more cards.</span></div>
+    <div style={styles.exRow}><strong style={{color:"#facc15",minWidth:90}}>6 or 7</strong><span style={{color:"#d1d5db"}}>Player stands. No third card drawn.</span></div>
+    <div style={styles.exRow}><strong style={{color:"#f87171",minWidth:90}}>0 through 5</strong><span style={{color:"#d1d5db"}}>Player draws a third card.</span></div>
+  </div>
+  <div style={styles.panel}>
+    <h3 style={{color:"#60a5fa",fontSize:18,fontWeight:700,marginBottom:10}}>Remember</h3>
+    <p style={{color:"#d1d5db",fontSize:14,lineHeight:1.6}}>The simple way to remember: <strong style={{color:"#fff"}}>5 and under always draws. 6 and 7 always stands. 8 and 9 is a Natural.</strong> As a dealer, always check both hands, Player and Banker, for Naturals first before deciding whether the Player draws.</p>
+  </div>
 </div>;}
 
 function L4(){return <div>
-  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>🏦 Banker Third Card</h3>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:10}}>Banker Third Card</h3>
     <div style={styles.ruleBlue}><strong>If Player Stands:</strong> Banker draws 0-5, stands 6-7</div>
-    <div style={styles.ruleRed}><strong>If Player Draws:</strong> Use chart ↓</div></div>
+    <div style={styles.ruleRed}><strong>If Player Draws:</strong> Use chart below</div></div>
   <div style={styles.panel}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}><thead><tr><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#d1d5db"}}>Banker</th><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#86efac"}}>Draws</th><th style={{padding:8,border:"1px solid #4b5563",background:"#374151",color:"#fca5a5"}}>Stands</th></tr></thead><tbody>
     {[["0, 1, 2","ALWAYS draws","Never stands"],["3","0-7, 9","8 only"],["4","2-7","0, 1, 8, 9"],["5","4-7","0-3, 8, 9"],["6","6-7","0-5, 8, 9"],["7","NEVER draws","Always stands"]].map((r,i)=><tr key={i}><td style={{padding:8,border:"1px solid #4b5563",color:"#fff",fontWeight:700}}>{r[0]}</td><td style={{padding:8,border:"1px solid #4b5563",color:"#86efac"}}>{r[1]}</td><td style={{padding:8,border:"1px solid #4b5563",color:"#fca5a5"}}>{r[2]}</td></tr>)}
   </tbody></table></div>
-  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:16,fontWeight:700,marginBottom:10}}>🧠 Shrinking Window</h3>
+  <div style={styles.panel}><h3 style={{color:"#facc15",fontSize:16,fontWeight:700,marginBottom:10}}>Shrinking Window</h3>
     <p style={{color:"#d1d5db",fontSize:13,marginBottom:10}}>As Banker's total goes up, the draw range gets <strong style={{color:"#fff"}}>smaller</strong>:</p>
     <div style={{background:"#2d3748",borderRadius:8,padding:12,marginBottom:10}}>
       {[["Banker 3:","Draws on 0,1,2,3,4,5,6,7,9","(only exception: 8)"],["Banker 4:","Draws on 2,3,4,5,6,7","(drops 0, 1, 8, 9)"],["Banker 5:","Draws on 4,5,6,7","(drops 0-3, 8, 9)"],["Banker 6:","Draws on 6,7 only","(tightest window)"]].map((r,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<3?8:0}}><span style={{color:"#fff",fontWeight:700,width:80}}>{r[0]}</span><span style={{color:"#86efac"}}>{r[1]}</span><span style={{color:"#fca5a5",fontSize:12}}>{r[2]}</span></div>)}
     </div>
-    <p style={{color:"#facc15",fontSize:13,fontWeight:600}}>💡 Banker 3 draws on everything except 8. Then the window shrinks by 2 each step.</p>
+    <p style={{color:"#facc15",fontSize:13,fontWeight:600}}>Banker 3 draws on everything except 8. Then the window shrinks by 2 each step.</p>
   </div>
 </div>;}
 
 function L5(){return <div>
-  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:12}}>💰 Payouts</h3>
+  <div style={styles.panel}><h3 style={{color:"#4ade80",fontSize:18,fontWeight:700,marginBottom:12}}>Payouts</h3>
     <div style={styles.ruleGreen}>Player wins: Pays 1 to 1 (even money)</div><div style={styles.ruleYellow}>Banker wins: Pays 1 to 1 minus 5% commission</div><div style={styles.ruleBlue}>Tie: Pays 8 to 1. Player and Banker bets push.</div></div>
-  <div style={styles.panel}><h3 style={{color:"#f87171",fontSize:16,fontWeight:700,marginBottom:8}}>🧮 5% Commission: Divide by 20</h3>
+  <div style={styles.panel}><h3 style={{color:"#f87171",fontSize:16,fontWeight:700,marginBottom:8}}>5% Commission: Divide by 20</h3>
     <div style={styles.exRow}><strong style={{color:"#fff"}}>$25 bet:</strong><span style={{color:"#d1d5db"}}>$1.25 commission → pays $23.75</span></div>
     <div style={styles.exRow}><strong style={{color:"#fff"}}>$100 bet:</strong><span style={{color:"#d1d5db"}}>$5.00 commission → pays $95.00</span></div></div>
 </div>;}
 
-const LM={1:L1,2:L2,3:L3,4:L4,5:L5,7:L4};
+const LM={1:L1,3:L3,4:L4,5:L5};
 
 /* QUIZ GENERATORS */
 function g1(){const qs=[];for(let i=0;i<10;i++){const cards=i>6?[rc(),rc(),rc()]:[rc(),rc()];const t=ht(cards);const opts=[t];while(opts.length<4){const n=Math.floor(Math.random()*10);if(!opts.includes(n))opts.push(n);}qs.push({cards,correct:t,options:shuf(opts),q:"Hand total?"});}return qs;}
 function g2(){const qs=[];for(let i=0;i<10;i++){const pC=rh(),bC=rh(),pT=ht(pC),bT=ht(bC);if(pT>=8||bT>=8)qs.push({pCards:pC,bCards:bC,q:"What happens?",correct:"Natural",options:["Natural","Player draws","Player stands","Both draw"]});else if(pT>=6)qs.push({pCards:pC,bCards:bC,q:"Player has "+pT+"?",correct:"STANDS",options:["STANDS","DRAWS","Natural","Both stand"]});else qs.push({pCards:pC,bCards:bC,q:"Player has "+pT+"?",correct:"DRAWS",options:["STANDS","DRAWS","Natural","Both stand"]});}return qs;}
-function g3(){const qs=[];for(let i=0;i<10;i++){let pC=rh(),pT=ht(pC);while(pT>=8){pC[1]=rc();pT=ht(pC);}qs.push({pCards:pC,q:"Player "+pT+". Draw or stand?",correct:pT<=5?"DRAW":"STAND",options:["DRAW","STAND"]});}return qs;}
+function g3(){const qs=[];for(let i=0;i<10;i++){let pC=rh(),pT=ht(pC);if(i<4){while(pT>=6){pC[1]=rc();pT=ht(pC);}qs.push({pCards:pC,q:"Player has "+pT+". Draw or stand?",correct:"DRAW",options:["DRAW","STAND","NATURAL"]});}else if(i<7){while(pT<6||pT>7){pC[1]=rc();pT=ht(pC);}qs.push({pCards:pC,q:"Player has "+pT+". Draw or stand?",correct:"STAND",options:["DRAW","STAND","NATURAL"]});}else{while(pT<8){pC[1]=rc();pT=ht(pC);}qs.push({pCards:pC,q:"Player has "+pT+". Draw or stand?",correct:"NATURAL",options:["DRAW","STAND","NATURAL"]});}}return shuf(qs);}
 
 function g4Beg(){
   return shuf([
-    {bTotal:0,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player's third card."},
-    {bTotal:1,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player's third card."},
-    {bTotal:2,pThird:{rank:"K",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws, even when the Player's third card is a King (value 0)."},
-    {bTotal:7,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player's third card is."},
-    {bTotal:7,pThird:{rank:"2",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player's third card is."},
-    {bTotal:3,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0-5 draws, 6-7 stand."},
-    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0-5 draws."},
-    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"If Player stands, 6 and 7 stand."},
-    {bTotal:7,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"If Player stands, 6 and 7 stand."},
-    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws."},
+    {bTotal:0,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player third card."},
+    {bTotal:1,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player third card."},
+    {bTotal:2,pThird:{rank:"K",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws, even when the Player third card is a King with a value of 0."},
+    {bTotal:7,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player third card is."},
+    {bTotal:7,pThird:{rank:"2",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player third card is."},
+    {bTotal:3,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"When the Player stands, Banker uses the simple rule: Banker draws on 0 through 5, and stands on 6 and 7. Banker has 3, so Banker draws."},
+    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"When the Player stands, Banker uses the simple rule: Banker draws on 0 through 5, and stands on 6 and 7. Banker has 5, so Banker draws."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"When the Player stands and the Banker has 6 or 7, the Banker stands. Banker has 6, so Banker stands."},
+    {bTotal:7,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"When the Player stands and the Banker has 6 or 7, the Banker stands. Banker has 7, so Banker stands."},
+    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player third card, even when it is an 8."},
   ]);
 }
 function g4Adv(){
   return shuf([
-    {bTotal:3,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8."},
-    {bTotal:3,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 3: the one exception is 8."},
-    {bTotal:4,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7."},
-    {bTotal:4,pThird:{rank:"9",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7. 9 is outside."},
-    {bTotal:5,pThird:{rank:"6",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7."},
-    {bTotal:5,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 2 is below."},
-    {bTotal:6,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only on 6-7."},
-    {bTotal:6,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 6 draws only on 6-7. 4 is outside."},
-    {bTotal:3,pThird:{rank:"9",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8. 9 is not 8."},
-    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on 2-7. 2 is the lower boundary."},
-    {bTotal:5,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 7 is the upper boundary."},
-    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws on 6-7."},
-    {bTotal:4,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Player stands → simple rule: 0-5 draws."},
-    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Player stands → simple rule: 6-7 stand."},
-    {bTotal:5,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on 4-7. 8 is above."},
+    {bTotal:3,pThird:{rank:"5",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on all cards except 8. The Player third card is a 5, which is not 8, so Banker draws."},
+    {bTotal:3,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 3 draws on all cards except 8. The Player third card is an 8, which is the one exception, so Banker stands."},
+    {bTotal:4,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on all cards 2 through 7. The Player third card is a 5, which falls within that range, so Banker draws."},
+    {bTotal:4,pThird:{rank:"9",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws on all cards 2 through 7. The Player third card is a 9, which is outside that range, so Banker stands."},
+    {bTotal:5,pThird:{rank:"6",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on all cards 4 through 7. The Player third card is a 6, which falls within that range, so Banker draws."},
+    {bTotal:5,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on all cards 4 through 7. The Player third card is a 2, which is below that range, so Banker stands."},
+    {bTotal:6,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only when the Player third card is 6 or 7. The Player third card is a 7, which is in range, so Banker draws."},
+    {bTotal:6,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 6 draws only when the Player third card is 6 or 7. The Player third card is a 4, which is outside that range, so Banker stands."},
+    {bTotal:3,pThird:{rank:"9",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on all cards except 8. The Player third card is a 9, which is not 8, so Banker draws. Many people confuse 8 and 9 here."},
+    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws on all cards 2 through 7. The Player third card is a 2, which is right at the lower boundary of the range, so Banker draws."},
+    {bTotal:5,pThird:{rank:"7",suit:"♦"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws on all cards 4 through 7. The Player third card is a 7, which is right at the upper boundary of the range, so Banker draws."},
+    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only when the Player third card is 6 or 7. The Player third card is a 6, which is in range, so Banker draws."},
+    {bTotal:4,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"When the Player stands, Banker uses the simple rule: Banker draws on 0 through 5, and stands on 6 and 7. Banker has 4, so Banker draws."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"When the Player stands, Banker uses the simple rule: Banker draws on 0 through 5, and stands on 6 and 7. Banker has 6, so Banker stands."},
+    {bTotal:5,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws on all cards 4 through 7. The Player third card is an 8, which is above that range, so Banker stands."},
   ]);
 }
 function g4Exp(){
   return shuf([
-    {bTotal:3,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B3 draws all EXCEPT 8."},
-    {bTotal:3,pThird:{rank:"K",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"K=0, not 8."},
-    {bTotal:6,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B6 only draws 6-7."},
-    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"6 in 6-7."},
-    {bTotal:4,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"A=1, outside 2-7."},
-    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"2 in 2-7."},
-    {bTotal:5,pThird:{rank:"3",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"3 below 4-7."},
-    {bTotal:5,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"4 in 4-7."},
-    {bTotal:7,pThird:{rank:"3",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"B7 ALWAYS stands."},
-    {bTotal:3,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"9 not 8."},
-    {bTotal:4,pThird:{rank:"10",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"10=0, outside 2-7."},
-    {bTotal:6,pThird:{rank:"7",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"7 in 6-7."},
-    {bTotal:5,pThird:{rank:"J",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"J=0, outside 4-7."},
-    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"B0-2 ALWAYS draws."},
-    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Player stands → 6-7 stands."},
-    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Player stands → 0-5 draws."},
-    {bTotal:4,pThird:{rank:"8",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"8 above 2-7."},
-    {bTotal:6,pThird:{rank:"Q",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Q=0, outside 6-7."},
-    {bTotal:3,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"A=1, not 8."},
-    {bTotal:5,pThird:{rank:"7",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"7 in 4-7."},
+    {bTotal:3,pThird:{rank:"8",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except when Player's third card is 8. The Player's third card is 8, so Banker stands."},
+    {bTotal:3,pThird:{rank:"K",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8. The Player third card is a King, which has a value of 0. Since 0 is not 8, Banker draws."},
+    {bTotal:6,pThird:{rank:"5",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 6 draws only when Player third card is 6 or 7. The Player third card is a 5, which is outside that range, so Banker stands."},
+    {bTotal:6,pThird:{rank:"6",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only when Player third card is 6 or 7. The Player third card is a 6, which is in range, so Banker draws."},
+    {bTotal:4,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws when Player third card is 2 through 7. The Player third card is an Ace, which has a value of 1. Since 1 is outside 2-7, Banker stands."},
+    {bTotal:4,pThird:{rank:"2",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 4 draws when Player third card is 2 through 7. The Player third card is a 2, which is right at the lower boundary, so Banker draws."},
+    {bTotal:5,pThird:{rank:"3",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws when Player third card is 4 through 7. The Player third card is a 3, which is below that range, so Banker stands."},
+    {bTotal:5,pThird:{rank:"4",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws when Player third card is 4 through 7. The Player third card is a 4, which is right at the lower boundary, so Banker draws."},
+    {bTotal:7,pThird:{rank:"3",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker with 7 always stands, no matter what the Player third card is."},
+    {bTotal:3,pThird:{rank:"9",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8. The Player third card is a 9, which is not 8, so Banker draws."},
+    {bTotal:4,pThird:{rank:"10",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws when Player third card is 2 through 7. The Player third card is a 10, which has a value of 0. Since 0 is outside 2-7, Banker stands."},
+    {bTotal:6,pThird:{rank:"7",suit:"♣"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 6 draws only when Player third card is 6 or 7. The Player third card is a 7, which is in range, so Banker draws."},
+    {bTotal:5,pThird:{rank:"J",suit:"♠"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 5 draws when Player third card is 4 through 7. The Player third card is a Jack, which has a value of 0. Since 0 is outside 4-7, Banker stands."},
+    {bTotal:2,pThird:{rank:"8",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker with 0, 1, or 2 always draws regardless of the Player third card."},
+    {bTotal:6,pThird:null,q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0 through 5 draws, 6 and 7 stand. Banker has 6, so Banker stands."},
+    {bTotal:5,pThird:null,q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"If Player stands, Banker uses the simple rule: 0 through 5 draws, 6 and 7 stand. Banker has 5, so Banker draws."},
+    {bTotal:4,pThird:{rank:"8",suit:"♦"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 4 draws when Player third card is 2 through 7. The Player third card is an 8, which is above that range, so Banker stands."},
+    {bTotal:6,pThird:{rank:"Q",suit:"♣"},q:"Does Banker draw or stand?",correct:"STAND",options:["DRAW","STAND"],trap:"Banker 6 draws only when Player third card is 6 or 7. The Player third card is a Queen, which has a value of 0. Since 0 is outside 6-7, Banker stands."},
+    {bTotal:3,pThird:{rank:"A",suit:"♠"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 3 draws on everything except 8. The Player third card is an Ace, which has a value of 1. Since 1 is not 8, Banker draws."},
+    {bTotal:5,pThird:{rank:"7",suit:"♥"},q:"Does Banker draw or stand?",correct:"DRAW",options:["DRAW","STAND"],trap:"Banker 5 draws when Player third card is 4 through 7. The Player third card is a 7, which is right at the upper boundary, so Banker draws."},
   ]);
 }
-function g5(){const qs=[];const amts=[20,25,50,75,100,150,200,250,500,1000];for(let i=0;i<10;i++){const b=amts[i],p=b-b*0.05,cm=b*0.05;const opts=[p];while(opts.length<4){const w=p+(Math.floor(Math.random()*6)-3)*2.5;if(w>0&&!opts.includes(w))opts.push(parseFloat(w.toFixed(2)));else{const w2=parseFloat((p+5).toFixed(2));if(!opts.includes(w2))opts.push(w2);}}const cmStr=cm%1===0?"$"+cm:"$"+cm.toFixed(2);const pStr=p%1===0?"$"+p:"$"+p.toFixed(2);qs.push({q:"Banker wins. Bet is $"+b+". Payout?",correct:"$"+(p%1===0?p:p.toFixed(2)),options:shuf(opts).map(v=>"$"+(v%1===0?v:v.toFixed(2))),trap:"$"+b+" × 0.05 = "+cmStr+". Payout = $"+b+" - "+cmStr+" = "+pStr});}return qs;}
+function g5(){const qs=[];const amts=[25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100];for(let i=0;i<10;i++){const b=amts[Math.floor(Math.random()*amts.length)],p=b-b*0.05,cm=b*0.05;const opts=new Set();opts.add(p);while(opts.size<4){const off=(Math.floor(Math.random()*8)+1)*(Math.random()<0.5?-1:1)*1.25;const w=parseFloat((p+off).toFixed(2));if(w>0&&w!==p)opts.add(w);}const cmStr=cm%1===0?"$"+cm:"$"+cm.toFixed(2);const pStr=p%1===0?"$"+p:"$"+p.toFixed(2);qs.push({q:"Banker wins. Bet is $"+b+". Payout?",correct:"$"+(p%1===0?p:p.toFixed(2)),options:shuf([...opts]).map(v=>"$"+(v%1===0?v:v.toFixed(2))),trap:"$"+b+" × 0.05 = "+cmStr+". Payout = $"+b+" - "+cmStr+" = "+pStr});}return qs;}
 function g7(){return shuf(g4Exp()).slice(0,2);}
-const GENS={1:g1,2:g2,3:g3,5:g5,7:g7};
+const GENS={1:g1,3:g3,5:g5};
 
 function MistakeDetail({m}){
   const[open,setO]=useState(false);
@@ -196,7 +201,7 @@ function MistakeDetail({m}){
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,padding:8,background:"#2d3748",borderRadius:6}}><span style={{color:"#60a5fa",fontWeight:700,fontSize:12,minWidth:110}}>Player 3rd Card:</span><Card rank={m.pThird.rank} suit={m.pThird.suit} size="sm"/><span style={{color:"#d1d5db",fontSize:13,fontWeight:700}}>{"= "+CV[m.pThird.rank]}</span></div>
         <div style={{display:"flex",alignItems:"center",gap:10,padding:8,background:"#2d3748",borderRadius:6}}><span style={{color:"#e88a8a",fontWeight:700,fontSize:12,minWidth:110}}>Banker Total:</span><span style={{color:"#fff",fontSize:18,fontWeight:800}}>{m.bTotal}</span></div>
       </div>}
-      {m.trap&&<p style={{color:"#fbbf24",fontStyle:"italic",fontSize:13}}>{"💡 "+m.trap}</p>}
+      {m.trap&&<p style={{color:"#fbbf24",fontSize:13}}>{m.trap}</p>}
     </div>}
   </div>;
 }
@@ -208,26 +213,35 @@ function TrainingPage({goHome}){
   const[quiz,setQuiz]=useState([]);
   const[qi,setQi]=useState(0);
   const[sel,setSel]=useState(null);
+  const[selIdx,setSelIdx]=useState(null);
   const[fb,setFb]=useState(false);
   const[score,setScore]=useState(0);
   const[mist,setMist]=useState([]);
   const[diff,setDiff]=useState(null);
+  const[showQuit,setShowQuit]=useState(false);
 
-  function go(gen){setQuiz(gen());setQi(0);setSel(null);setFb(false);setScore(0);setMist([]);setMode("quiz");}
+  function go(gen){setQuiz(gen());setQi(0);setSel(null);setSelIdx(null);setFb(false);setScore(0);setMist([]);setShowQuit(false);setMode("quiz");}
   function startQ(id,d){
     if(id===4){if(d==="beginner")go(g4Beg);else if(d==="advanced")go(g4Adv);else go(g4Exp);}
     else{const gen=GENS[id];if(gen)go(gen);}
   }
-  function ans(a){if(fb)return;setSel(a);setFb(true);if(String(a)===String(quiz[qi].correct))setScore(s=>s+1);else setMist(m=>[...m,{...quiz[qi],userAnswer:a}]);}
-  function nxt(){if(qi<quiz.length-1){setQi(q=>q+1);setSel(null);setFb(false);}else setMode("result");}
+  function ans(a,idx){if(fb)return;setSel(a);setSelIdx(idx);setFb(true);if(String(a)===String(quiz[qi].correct))setScore(s=>s+1);else setMist(m=>[...m,{...quiz[qi],userAnswer:a}]);}
+  function nxt(){if(qi<quiz.length-1){setQi(q=>q+1);setSel(null);setSelIdx(null);setFb(false);}else setMode("result");}
   const ok=fb&&String(sel)===String(quiz[qi]?.correct);
   const tot=quiz.length||10;
 
   if(mode==="menu")return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
-    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#60a5fa"}}>🧠 Training Modules</div><div style={{minWidth:100}}/></div>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#60a5fa"}}>Training Modules</div><div style={{minWidth:100}}/></div>
     <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
-      {MODULES.map(m=><button key={m.id} style={styles.modItem} onClick={()=>{setCur(m.id);setDiff(null);setMode("learn");}}>
-        <div style={{fontSize:28}}>{m.icon}</div><div><div style={{fontWeight:700,color:m.id===7?"#facc15":"#fff"}}>{m.title}</div><div style={{color:"#9ca3af",fontSize:13}}>{m.desc}</div></div>
+      {MODULES.map(m=><button key={m.id} style={{...styles.modItem,background:m.bg,border:"1px solid rgba(255,255,255,0.1)",padding:0,overflow:"hidden"}} onClick={()=>{setCur(m.id);setDiff(null);setMode("learn");}}>
+        <div style={{width:64,minHeight:72,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.25)",borderRight:"1px solid rgba(255,255,255,0.08)",flexShrink:0}}>
+          <div style={{fontSize:m.icon.length>1?18:24,fontWeight:900,color:m.color,letterSpacing:m.icon.length>1?-1:0}}>{m.icon}</div>
+        </div>
+        <div style={{padding:"14px 16px",flex:1}}>
+          <div style={{fontWeight:700,fontSize:15,color:m.color,marginBottom:3}}>{m.title}</div>
+          <div style={{color:"#94a3b8",fontSize:12,lineHeight:1.4}}>{m.desc}</div>
+        </div>
+        <div style={{padding:"0 16px",color:"rgba(255,255,255,0.2)",fontSize:20}}>›</div>
       </button>)}
     </div></div></div>;
 
@@ -235,28 +249,38 @@ function TrainingPage({goHome}){
   const LC=LM[cur];
 
   if(mode==="learn")return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
-    <div style={styles.topBar}><div style={{minWidth:100}}/><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:cur===7?"#facc15":"#fff"}}>{mi?.icon+" "+mi?.title}</div><div style={{minWidth:100}}/></div>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Back</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#fff"}}>{mi?.title}</div><div style={{minWidth:100}}/></div>
     <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
       {LC&&<LC/>}
       {cur!==4&&<div style={{textAlign:"center",marginTop:20}}>
-        <button style={{...styles.btn,background:"#d97706",color:"#000",fontSize:15,padding:"12px 28px",width:300}} onClick={()=>startQ(cur)}>Take the Quiz →</button>
+        <button style={{...styles.btn,background:"#eab308",color:"#000",fontSize:15,padding:"12px 28px",width:300}} onClick={()=>startQ(cur)}>Take the Quiz →</button>
       </div>}
       {cur===4&&<div style={{...styles.panel,marginTop:20}}>
         <p style={{color:"#d1d5db",fontSize:15,fontWeight:600,marginBottom:14,textAlign:"center"}}>Select Difficulty</p>
         <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-          {[["beginner","🟢 Beginner","10 questions","#2563eb"],["advanced","🟡 Advanced","15 questions","#d97706"],["expert","🔴 Expert","20 trick questions","#dc2626"]].map(([d,label,sub,bg])=>
+          {[["beginner","🟢 Beginner","10 questions","#2563eb"],["advanced","🟡 Advanced","15 questions","#d97706"],["expert","🔴 Expert","20 questions","#dc2626"]].map(([d,label,sub,bg])=>
             <button key={d} style={{flex:1,padding:"12px 20px",borderRadius:10,border:diff===d?"2px solid #fff":"2px solid transparent",cursor:"pointer",fontWeight:700,fontSize:14,textAlign:"center",minWidth:100,background:diff===d?bg:"#374151",color:"#fff"}} onClick={()=>setDiff(d)}>
               <div>{label}</div><div style={{fontSize:11,fontWeight:400,marginTop:2,color:"#94a3b8"}}>{sub}</div>
             </button>)}
         </div>
-        {diff&&<div style={{textAlign:"center",marginTop:14}}><button style={{...styles.btn,background:"#d97706",color:"#000",padding:"10px 28px",fontSize:15}} onClick={()=>startQ(4,diff)}>Start {diff.charAt(0).toUpperCase()+diff.slice(1)} Quiz →</button></div>}
+        {diff&&<div style={{textAlign:"center",marginTop:14}}><button style={{...styles.btn,background:"#eab308",color:"#000",padding:"10px 28px",fontSize:15}} onClick={()=>startQ(4,diff)}>Start {diff.charAt(0).toUpperCase()+diff.slice(1)} Quiz →</button></div>}
       </div>}
-      <div style={{textAlign:"center",marginTop:24,marginBottom:20}}><button style={{...styles.btn,background:"#2563eb",color:"#fff",padding:"12px 28px",fontSize:15,width:300}} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Back to Training Modules</button></div>
+      <div style={{textAlign:"center",marginTop:24,marginBottom:20}}><button style={{...styles.btn,background:"#000",color:"#fff",padding:"12px 28px",fontSize:15,width:300,border:"1px solid #374151"}} onClick={()=>{setMode("menu");setCur(null);setDiff(null);}}>← Back to Training Modules</button></div>
     </div></div></div>;
 
   if(mode==="quiz"&&quiz.length>0)return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
-    <div style={styles.topBar}><button style={styles.topBarLink} onClick={()=>setMode("learn")}>← Back</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700}}>{mi?.icon+" "+(cur===4&&diff?(diff.charAt(0).toUpperCase()+diff.slice(1)):"Quiz")}</div><div style={{minWidth:100}}/></div>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={()=>setShowQuit(true)}>← Back</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#fff"}}>{cur===4&&diff?(diff.charAt(0).toUpperCase()+diff.slice(1)):"Quiz"}</div><div style={{minWidth:100}}/></div>
     <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
+      {showQuit&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+        <div style={{background:"#1e293b",border:"1px solid #374151",borderRadius:16,padding:28,maxWidth:360,width:"100%",textAlign:"center"}}>
+          <p style={{color:"#fff",fontWeight:700,fontSize:18,marginBottom:8}}>Quit Quiz?</p>
+          <p style={{color:"#94a3b8",fontSize:14,marginBottom:20}}>Your progress will be lost.</p>
+          <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+            <button style={{...styles.btn,background:"#dc2626",color:"#fff",flex:1,padding:"12px 20px"}} onClick={()=>{setShowQuit(false);setMode("learn");}}>Quit</button>
+            <button style={{...styles.btn,background:"#374151",color:"#fff",flex:1,padding:"12px 20px"}} onClick={()=>setShowQuit(false)}>Continue Quiz</button>
+          </div>
+        </div>
+      </div>}
       <div style={{marginBottom:14}}><PBar current={qi+1} total={tot} label={"Question "+(qi+1)+" of "+tot+" | Score: "+score+"/"+(qi+(fb?1:0))}/></div>
       <div style={styles.panel}>
         {quiz[qi].cards&&<div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:14}}>{quiz[qi].cards.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}</div>}
@@ -268,7 +292,7 @@ function TrainingPage({goHome}){
           <div style={{flex:1,background:"rgba(37,99,235,0.12)",border:"1px solid rgba(96,165,250,0.3)",borderRadius:10,padding:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
             <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player's 3rd Card</div>
             {quiz[qi].pThird
-              ? <React.Fragment><Card rank={quiz[qi].pThird.rank} suit={quiz[qi].pThird.suit}/><div style={{fontSize:22,fontWeight:800,color:"#60a5fa"}}>{"= "+CV[quiz[qi].pThird.rank]}</div></React.Fragment>
+              ? <div><div style={{display:"flex",justifyContent:"center"}}><Card rank={quiz[qi].pThird.rank} suit={quiz[qi].pThird.suit}/></div><div style={{fontSize:22,fontWeight:800,color:"#60a5fa",textAlign:"center",marginTop:8}}>{"= "+CV[quiz[qi].pThird.rank]}</div></div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{width:64,minHeight:88,borderRadius:8,border:"2px dashed rgba(96,165,250,0.4)",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(37,99,235,0.08)"}}><span style={{fontSize:24,color:"rgba(96,165,250,0.5)"}}>{"—"}</span></div><div style={{fontSize:13,fontWeight:700,color:"#60a5fa",letterSpacing:1}}>STOOD</div></div>}
           </div>
           <div style={{flex:1,background:"rgba(232,138,138,0.12)",border:"1px solid rgba(232,138,138,0.3)",borderRadius:10,padding:14,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -277,14 +301,14 @@ function TrainingPage({goHome}){
           </div>
         </div>}
         <p style={{fontSize:16,fontWeight:600,textAlign:"center",marginBottom:14}}>{quiz[qi].q}</p>
-        {quiz[qi].options.map((o,i)=>{const s=String(o),c=String(quiz[qi].correct),sl=String(sel);
+        {quiz[qi].options.map((o,i)=>{const s=String(o),c=String(quiz[qi].correct);
           let st={...styles.quizOpt};
-          if(fb){if(s===c)st={...st,borderColor:"#22c55e",background:"rgba(34,197,94,0.15)"};else if(s===sl)st={...st,borderColor:"#ef4444",background:"rgba(239,68,68,0.15)"};else st={...st,opacity:0.4};}
-          return <button key={i} style={st} onClick={()=>ans(s)} disabled={fb}>{s}</button>;})}
+          if(fb){if(s===c)st={...st,borderColor:"#22c55e",background:"rgba(34,197,94,0.15)"};else if(i===selIdx)st={...st,borderColor:"#ef4444",background:"rgba(239,68,68,0.15)"};else st={...st,opacity:0.4};}
+          return <button key={i} style={st} onClick={()=>ans(s,i)} disabled={fb}>{s}</button>;})}
         {fb&&<div style={{padding:12,borderRadius:8,marginTop:12,border:"1px solid",borderColor:ok?"#166534":"#7f1d1d",background:ok?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.15)",fontSize:14}}>
           <p style={{fontWeight:700}}>{ok?"✅ Correct!":"❌ Incorrect"}</p>
           {!ok&&<p style={{marginTop:4,color:"#d1d5db"}}>Correct: <strong style={{color:"#4ade80"}}>{quiz[qi].correct}</strong></p>}
-          {quiz[qi].trap&&<p style={{marginTop:6,color:ok?"#86efac":"#fbbf24",fontStyle:"italic"}}>{"💡 "+quiz[qi].trap}</p>}
+          {quiz[qi].trap&&<p style={{marginTop:8,color:ok?"#86efac":"#fbbf24",fontSize:13,borderTop:"1px solid "+(ok?"rgba(134,239,172,0.2)":"rgba(251,191,36,0.2)"),paddingTop:8}}>{quiz[qi].trap}</p>}
         </div>}
         {fb&&<button style={{...styles.btn,background:"#2563eb",color:"#fff",width:"100%",marginTop:12,padding:12}} onClick={nxt}>{qi<tot-1?"Next Question →":"See Results"}</button>}
       </div>
@@ -312,14 +336,14 @@ function TrainingPage({goHome}){
 
 /* SIMULATOR PAGE */
 function genBet(){
-  const amounts=[25,50,75,100,150,200,250,500];
+  const amounts=[25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100];
   const pick=amounts[Math.floor(Math.random()*amounts.length)];
   const r=Math.random();
   if(r<0.4)return{type:"Player",amount:pick,tie:0};
   if(r<0.8)return{type:"Banker",amount:pick,tie:0};
-  if(r<0.9){const ta=Math.min(25,pick);return{type:"Player",amount:pick,tie:ta};}
-  if(r<0.95){const ta=Math.min(25,pick);return{type:"Banker",amount:pick,tie:ta};}
-  return{type:null,amount:0,tie:Math.min(25,pick)};
+  if(r<0.9){return{type:"Player",amount:pick,tie:25};}
+  if(r<0.95){return{type:"Banker",amount:pick,tie:25};}
+  return{type:null,amount:0,tie:25};
 }
 
 function SimPage({goHome}){
@@ -332,19 +356,30 @@ function SimPage({goHome}){
   const[bet,setBet]=useState(null);
   const[wrn,setWrn]=useState([]);
   const[hErr,setHE]=useState(0);
+  const[errLog,setErrLog]=useState([]);
+  const[stepErrs,setStepErrs]=useState(0);
+  const[showHint,setShowHint]=useState(null);
   const[st,setSt]=useState({h:0,p:0,e:0});
   const[comm,setCm]=useState(0);
   const[pOps,setPOps]=useState([]);
 
   function drw(){let s=shoe.slice();if(s.length<10)s=mkShoe();const c=s.pop();setShoe(s);return c;}
-  function aw(m){setWrn(w=>[...w,{msg:m}]);setHE(e=>e+1);}
+  function aw(m){
+    const newSE=stepErrs+1;
+    setStepErrs(newSE);
+    setWrn([{msg:m}]);
+    setHE(function(e){return e+1;});
+    setErrLog(function(el){return[...el,{msg:m,pC:[...pC],bC:[...bC],pTh:pTh,bTh:bTh,pT:ht(pC),bT:ht(bC)}];});
+    if(newSE>=2)setShowHint(m.replace("⚠️ ",""));
+  }
+  function clearStepErrs(){setStepErrs(0);setShowHint(null);setWrn([]);}
 
   function deal(){
     let s=shoe.slice();if(s.length<20)s=mkShoe();
     const c1=s.pop(),c2=s.pop(),c3=s.pop(),c4=s.pop();setShoe(s);
     const b=genBet();setBet(b);
     setPC([c1,c3]);setBC([c2,c4]);setPTh(null);setBTh(null);
-    setWrn([]);setHE(0);setPh("pa");
+    setWrn([]);setHE(0);setErrLog([]);setStepErrs(0);setShowHint(null);setPh("pa");
   }
 
   const pT=ht(pC),bT=ht(bC);
@@ -354,22 +389,22 @@ function SimPage({goHome}){
     if(isN){
       if(a==="nat-x"){aw("⚠️ It IS a Natural, but who wins?");return;}
       const natW=pT>bT?"Player":bT>pT?"Banker":"Tie";
-      if(a==="nat-p"){if(natW==="Player"){setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both Naturals! This is a Tie.");else aw("⚠️ Banker wins, not Player.");}
-      else if(a==="nat-b"){if(natW==="Banker"){setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both Naturals! This is a Tie.");else aw("⚠️ Player wins, not Banker.");}
-      else if(a==="nat-t"){if(natW==="Tie"){setPOps(bldO());setPh("po");}else aw("⚠️ Not a Tie. "+natW+" wins.");}
-      else aw("⚠️ "+(pT>=8?"Player":"Banker")+" has "+(pT>=8?pT:bT)+" — NATURAL!");
+      if(a==="nat-p"){if(natW==="Player"){clearStepErrs();setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both hands have Naturals with the same total. This is a Tie.");else aw("⚠️ Banker has "+bT+" which beats Player "+pT+". Select Natural — Banker.");}
+      else if(a==="nat-b"){if(natW==="Banker"){clearStepErrs();setPOps(bldO());setPh("po");}else if(natW==="Tie")aw("⚠️ Both hands have Naturals with the same total. This is a Tie.");else aw("⚠️ Player has "+pT+" which beats Banker "+bT+". Select Natural — Player.");}
+      else if(a==="nat-t"){if(natW==="Tie"){clearStepErrs();setPOps(bldO());setPh("po");}else aw("⚠️ The totals are not equal. "+natW+" has the higher Natural. Select Natural — "+natW+".");}
+      else aw("⚠️ "+(pT>=8?"Player has "+pT:"Banker has "+bT)+" which is a Natural. Look for Natural options.");
       return;
     }
     if(a==="nat-x"||a==="nat-p"||a==="nat-b"){aw("⚠️ Not Natural. P:"+pT+" B:"+bT);return;}
-    if(pT<=5){if(a==="draw"){setPTh(drw());setPh("ba");}else aw("⚠️ Player "+pT+" must DRAW.");}
-    else{if(a==="stand")setPh("ba");else aw("⚠️ Player "+pT+" must STAND.");}
+    if(pT<=5){if(a==="draw"){setPTh(drw());clearStepErrs();setPh("ba");}else aw("⚠️ Player "+pT+" must DRAW.");}
+    else{if(a==="stand"){clearStepErrs();setPh("ba");}else aw("⚠️ Player "+pT+" must STAND.");}
   }
   function hB(a){
     let sd;if(pTh===null)sd=bT<=5;else{if(bT<=2)sd=true;else if(bT===7)sd=false;else sd=bd(bT,pTh.rank);}
-    if(a==="draw"&&sd){setBTh(drw());setPh("cw");}
-    else if(a==="stand"&&!sd)setPh("cw");
-    else if(a==="draw")aw("⚠️ Banker "+bT+" should STAND."+(pTh===null?" (Player stands → simple rule)":""));
-    else aw("⚠️ Banker "+bT+" should DRAW."+(pTh===null?" (Player stands → simple rule)":""));
+    if(a==="draw"&&sd){setBTh(drw());clearStepErrs();setPh("cw");}
+    else if(a==="stand"&&!sd){clearStepErrs();setPh("cw");}
+    else if(a==="draw")aw("⚠️ Banker has "+bT+" and should stand."+(pTh===null?" Player stood, so Banker uses the simple rule: 6 and 7 stand.":" Based on the Player third card, Banker stands.")+" Select Banker Stands.");
+    else aw("⚠️ Banker has "+bT+" and should draw."+(pTh===null?" Player stood, so Banker uses the simple rule: 0 through 5 draws.":" Based on the Player third card, Banker draws.")+" Select Banker Draws.");
   }
   function gF(){let fP=pT,fB=bT;if(pTh){let s=0;for(let i=0;i<pC.length;i++)s+=CV[pC[i].rank];fP=(s+CV[pTh.rank])%10;}if(bTh){let s2=0;for(let i=0;i<bC.length;i++)s2+=CV[bC[i].rank];fB=(s2+CV[bTh.rank])%10;}return{fp:fP,fb:fB};}
   const fn=gF(),fp=fn.fp,fb2=fn.fb;
@@ -398,18 +433,19 @@ function SimPage({goHome}){
     while(u.length<4)u.push(fmt(Math.floor(Math.random()*tb*2)));
     const r=u.slice(0,4);if(!r.includes(cv))r[r.length-1]=cv;return shuf(r);
   }
-  function hW(pick){const actual=fp>fb2?"Player":fb2>fp?"Banker":"Tie";if(pick===actual){setPOps(bldO());setPh("po");}else aw("⚠️ P:"+fp+" B:"+fb2+". Winner is "+actual+".");}
+  function hW(pick){const actual=fp>fb2?"Player":fb2>fp?"Banker":"Tie";if(pick===actual){clearStepErrs();setPOps(bldO());setPh("po");}else aw("⚠️ Player has "+fp+" and Banker has "+fb2+". The winning hand is "+actual+". Select "+actual+".");}
   function hPay(pk){
     const cp=cP(),cv=fmt(cp.pay);
     if(pk.replace(/\s/g,"")===cv.replace(/\s/g,"")){
       setCm(c=>c+cp.cm);
+      clearStepErrs();
       setSt(s=>({h:s.h+1,p:s.p+(hErr===0?1:0),e:s.e+hErr}));setPh("done");
     }else aw("⚠️ Payout error: "+cp.d+". Correct answer is: "+cv);
   }
   function rT(cards,third){if(cards.length<2)return null;if(third){let s=0;for(let i=0;i<cards.length;i++)s+=CV[cards[i].rank];return(s+CV[third.rank])%10;}return ht(cards);}
 
   const base={minHeight:"100vh",display:"flex",flexDirection:"column",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"};
-  const bacTable={position:"relative",background:"linear-gradient(180deg,#14532d,#1a6b35)",border:"4px solid #d4a017",borderRadius:"180px 180px 20px 20px",padding:"20px 16px 16px",marginBottom:16,boxShadow:"inset 0 0 40px rgba(0,0,0,0.3),0 4px 20px rgba(0,0,0,0.4)"};
+  const bacTable={position:"relative",background:"linear-gradient(180deg,#14532d,#1a6b35)",border:"3px solid #d4a017",borderRadius:"60px 60px 16px 16px",padding:"16px 12px 12px",marginBottom:16,boxShadow:"inset 0 0 30px rgba(0,0,0,0.3),0 4px 16px rgba(0,0,0,0.4)"};
 
   function betLabel(){
     if(!bet)return null;
@@ -420,20 +456,15 @@ function SimPage({goHome}){
   }
 
   return <div style={base}>
-    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#4ade80"}}>🎰 Dealer Simulator</div><div style={{minWidth:100}}/></div>
+    <div style={styles.topBar}><button style={styles.topBarLink} onClick={goHome}>← Home</button><div style={{flex:1,textAlign:"center",fontSize:18,fontWeight:700,color:"#4ade80"}}>Dealer Simulator</div><div style={{minWidth:100}}/></div>
     <div style={{flex:1,overflowY:"auto",padding:20}}><div style={{maxWidth:680,margin:"0 auto"}}>
-
-    <div style={styles.statsBar}>
-      {[["Hands",st.h,"#fff"],["Perfect",st.p,"#4ade80"],["Errors",st.e,"#f87171"],["Commission Owed","$"+(comm%1===0?comm:comm.toFixed(2)),"#d4a017"]].map(([l,v,c])=>
-        <div key={l}><div style={{color:"#9ca3af",fontSize:13}}>{l}</div><div style={{fontSize:20,fontWeight:700,color:c}}>{v}</div></div>)}
-    </div>
 
     {ph==="ready"&&<div>
       <div style={bacTable}>
-        <div style={{display:"flex",justifyContent:"space-around",padding:"10px 20px 16px",minHeight:130}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#60a5fa",fontWeight:700}}>Player</div></div>
-          <div style={{width:1,background:"rgba(212,160,23,0.2)"}}/>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}><div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#e88a8a",fontWeight:700}}>Banker</div></div>
+        <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px 12px",minHeight:130}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1}}><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player</div></div>
+          <div style={{width:2,background:"rgba(212,160,23,0.4)",margin:"0 8px",alignSelf:"stretch"}}/>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1}}><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#e88a8a",fontWeight:700}}>Banker</div></div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderTop:"2px solid rgba(212,160,23,0.3)",marginTop:8}}>
           {["Player","Tie","Banker"].map((z,zi)=>{
@@ -451,17 +482,17 @@ function SimPage({goHome}){
 
     {bet&&ph!=="ready"&&ph!=="done"&&<div>
       <div style={bacTable}>
-        <div style={{display:"flex",justifyContent:"space-around",padding:"10px 20px 16px",minHeight:130}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#60a5fa",fontWeight:700}}>Player</div>
-            <div style={{display:"flex",gap:4,justifyContent:"center"}}>{pC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{pTh&&<div style={{marginLeft:6,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:6}}><Card rank={pTh.rank} suit={pTh.suit}/></div>}</div>
-            {pC.length===2&&<div style={{fontSize:26,fontWeight:800,color:"#60a5fa",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(pC,pTh)}</div>}
+        <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px 12px",minHeight:130,position:"relative"}}>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1,zIndex:1}}>
+            <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player</div>
+            <div style={{display:"flex",gap:3,justifyContent:"center"}}>{pC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{pTh&&<div style={{marginLeft:4,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:4}}><Card rank={pTh.rank} suit={pTh.suit}/></div>}</div>
+            {pC.length===2&&<div style={{fontSize:22,fontWeight:800,color:"#60a5fa",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(pC,pTh)}</div>}
           </div>
-          <div style={{width:1,background:"rgba(212,160,23,0.2)"}}/>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:3,color:"#e88a8a",fontWeight:700}}>Banker</div>
-            <div style={{display:"flex",gap:4,justifyContent:"center"}}>{bC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{bTh&&<div style={{marginLeft:6,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:6}}><Card rank={bTh.rank} suit={bTh.suit}/></div>}</div>
-            {bC.length===2&&<div style={{fontSize:26,fontWeight:800,color:"#e88a8a",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(bC,bTh)}</div>}
+          <div style={{width:3,background:"#d4a017",margin:"0 6px",alignSelf:"stretch",zIndex:2,flexShrink:0}}/>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,flex:1,zIndex:1}}>
+            <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#e88a8a",fontWeight:700}}>Banker</div>
+            <div style={{display:"flex",gap:3,justifyContent:"center"}}>{bC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit}/>)}{bTh&&<div style={{marginLeft:4,borderLeft:"2px solid rgba(212,160,23,0.3)",paddingLeft:4}}><Card rank={bTh.rank} suit={bTh.suit}/></div>}</div>
+            {bC.length===2&&<div style={{fontSize:22,fontWeight:800,color:"#e88a8a",textShadow:"0 2px 6px rgba(0,0,0,0.5)"}}>{rT(bC,bTh)}</div>}
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",borderTop:"2px solid rgba(212,160,23,0.3)",marginTop:8}}>
@@ -480,17 +511,25 @@ function SimPage({goHome}){
         </div>
       </div>
       <div style={{textAlign:"center",marginBottom:12,display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
-        {betLabel()&&betLabel().map((b,i)=><div key={i} style={{display:"inline-block",padding:"8px 16px",borderRadius:8,fontSize:14,fontWeight:700,color:b.col,background:"rgba(0,0,0,0.3)",border:"1px solid "+b.col}}>{b.label+" Bets "+b.text}</div>)}
+        {betLabel()&&betLabel().map((b,i)=><div key={i} style={{display:"inline-block",padding:"10px 20px",borderRadius:10,fontSize:16,fontWeight:700,color:b.col,background:"rgba(0,0,0,0.3)",border:"1px solid "+b.col}}>{b.label+" Bets "+b.text}</div>)}
       </div>
     </div>}
 
     {wrn.map((w,i)=><div key={i} style={styles.warnBox}>{w.msg}</div>)}
 
+    {showHint&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:"#1e293b",border:"1px solid #374151",borderRadius:16,padding:28,maxWidth:400,width:"100%",textAlign:"center"}}>
+        <p style={{color:"#f87171",fontWeight:700,fontSize:18,marginBottom:12}}>Incorrect</p>
+        <p style={{color:"#d1d5db",fontSize:15,lineHeight:1.6,marginBottom:20}} dangerouslySetInnerHTML={{__html:showHint.replace(/Player/g,'<span style="color:#60a5fa;font-weight:700">Player</span>').replace(/Banker/g,'<span style="color:#e88a8a;font-weight:700">Banker</span>').replace(/Tie/g,'<span style="color:#4ade80;font-weight:700">Tie</span>')}}/>
+        <button style={{...styles.btn,background:"#374151",color:"#fff",padding:"12px 28px"}} onClick={()=>setShowHint(null)}>Got It</button>
+      </div>
+    </div>}
+
     {ph==="pa"&&<div style={{marginTop:12}}>
       {isN?<div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
           <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hP("nat-p")}>Natural — Player</button>
-          <button style={{...styles.btn,background:"#16a34a",color:"#fff"}} onClick={()=>hP("nat-t")}>Natural — Tie</button>
+          <button style={{...styles.btn,background:"#16a34a",color:"#fff"}} onClick={()=>hP("nat-t")}>Tie</button>
           <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hP("nat-b")}>Natural — Banker</button>
         </div>
       </div>:<div>
@@ -502,14 +541,13 @@ function SimPage({goHome}){
       </div>}
     </div>}
     {ph==="ba"&&<div style={{marginTop:12}}>
-      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:10,fontSize:15,fontWeight:600}}>{pTh?("Player draws: "+pTh.rank+pTh.suit+" (value "+CV[pTh.rank]+"). "):"Player stands. "}Banker has {bT}. Your call?</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
         <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hB("draw")}>Banker Draws</button>
         <button style={{...styles.btn,background:"#e88a8a",color:"#1a1a2e"}} onClick={()=>hB("stand")}>Banker Stands</button>
       </div>
     </div>}
     {ph==="cw"&&<div style={{marginTop:12}}>
-      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:10,fontSize:15,fontWeight:600}}>Final: Player {fp} vs Banker {fb2}. Who wins?</p>
+      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:10,fontSize:15,fontWeight:600}}>Select the winning hand</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
         <button style={{...styles.btn,background:"#60a5fa",color:"#0f172a"}} onClick={()=>hW("Player")}>Player</button>
         <button style={{...styles.btn,background:"#16a34a",color:"#fff"}} onClick={()=>hW("Tie")}>Tie</button>
@@ -517,19 +555,93 @@ function SimPage({goHome}){
       </div>
     </div>}
     {ph==="po"&&<div style={{marginTop:12}}>
-      <p style={{textAlign:"center",color:"#d1d5db",marginBottom:6,fontSize:15,fontWeight:600}}>{(fp>fb2?"Player":fb2>fp?"Banker":"Tie")+" wins."}</p>
-      <div style={{textAlign:"center",marginBottom:4,display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
-        {betLabel()&&betLabel().map((b,i)=><div key={i} style={{display:"inline-block",padding:"6px 14px",borderRadius:8,fontSize:13,fontWeight:700,color:b.col,background:"rgba(0,0,0,0.3)",border:"1px solid "+b.col}}>{b.label+" Bets "+b.text}</div>)}
-      </div>
-      <p style={{textAlign:"center",color:"#9ca3af",marginBottom:12,fontSize:13}}>What is the net payout? (negative = collect from guest)</p>
+      <p style={{textAlign:"center",color:"#9ca3af",marginBottom:12,fontSize:13}}>What is the net payout?</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pOps.map((o,i)=><button key={i} style={{...styles.btn,background:"#374151",color:"#fff",fontSize:16}} onClick={()=>hPay(o)}>{o}</button>)}</div>
     </div>}
     {ph==="done"&&<div style={{marginTop:12}}>
       <div style={{padding:"24px 16px",borderRadius:16,textAlign:"center",border:"2px solid",borderColor:hErr===0?"#16a34a":"#d97706",background:hErr===0?"rgba(20,83,45,0.15)":"rgba(113,63,18,0.15)"}}>
-        <div style={{fontSize:36}}>{hErr===0?"🤟":"📋"}</div>
-        <h3 style={{fontSize:18,fontWeight:700,marginTop:6}}>{hErr===0?"Perfect!":"Complete"}</h3>
+        <h3 style={{fontSize:18,fontWeight:700,marginTop:6}}>{hErr===0?"Correct":"Complete"}</h3>
         {hErr>0&&<p style={{color:"#fbbf24",marginTop:3,fontSize:13}}>{hErr+" error"+(hErr>1?"s":"")}</p>}
-        <p style={{color:"#9ca3af",fontSize:13,marginTop:6}}>{(()=>{const cp=cP();return(cp.pay>0?"Paid "+fmt(cp.pay):cp.pay<0?"Collected "+fmt(Math.abs(cp.pay)):"Push")+(cp.cm>0?" | Commission: "+fmt(cp.cm):"");})()}</p>
+        {hErr>0&&<div style={{marginTop:12}}>
+          {errLog.map((err,idx)=><div key={idx} style={{marginBottom:10,padding:12,background:"rgba(220,38,38,0.1)",border:"1px solid rgba(220,38,38,0.3)",borderRadius:10}}>
+            <p style={{color:"#fca5a5",fontSize:13,fontWeight:600,marginBottom:8}}>{err.msg.replace("⚠️ ","")}</p>
+            <div style={{display:"flex",justifyContent:"space-around",padding:8,background:"rgba(0,0,0,0.2)",borderRadius:8}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,flex:1}}>
+                <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player</div>
+                <div style={{display:"flex",gap:2,flexWrap:"wrap",justifyContent:"center"}}>{err.pC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}{err.pTh&&<div style={{marginLeft:3,borderLeft:"2px solid rgba(255,255,255,0.2)",paddingLeft:3}}><Card rank={err.pTh.rank} suit={err.pTh.suit} size="sm"/></div>}</div>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,flex:1}}>
+                <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:2,color:"#e88a8a",fontWeight:700}}>Banker</div>
+                <div style={{display:"flex",gap:2,flexWrap:"wrap",justifyContent:"center"}}>{err.bC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}{err.bTh&&<div style={{marginLeft:3,borderLeft:"2px solid rgba(255,255,255,0.2)",paddingLeft:3}}><Card rank={err.bTh.rank} suit={err.bTh.suit} size="sm"/></div>}</div>
+              </div>
+            </div>
+          </div>)}
+        </div>}
+        <div style={{marginTop:16,padding:12,background:"rgba(0,0,0,0.2)",borderRadius:12}}>
+          <div style={{display:"flex",justifyContent:"space-around",marginBottom:8}}>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:0,flex:1}}>
+              <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#60a5fa",fontWeight:700}}>Player</div>
+              <div style={{display:"flex",gap:2,flexWrap:"wrap",justifyContent:"center"}}>{pC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}{pTh&&<div style={{marginLeft:3,borderLeft:"2px solid rgba(255,255,255,0.2)",paddingLeft:3}}><Card rank={pTh.rank} suit={pTh.suit} size="sm"/></div>}</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#60a5fa"}}>{fp}</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:0,flex:1}}>
+              <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:2,color:"#e88a8a",fontWeight:700}}>Banker</div>
+              <div style={{display:"flex",gap:2,flexWrap:"wrap",justifyContent:"center"}}>{bC.map((c,i)=><Card key={i} rank={c.rank} suit={c.suit} size="sm"/>)}{bTh&&<div style={{marginLeft:3,borderLeft:"2px solid rgba(255,255,255,0.2)",paddingLeft:3}}><Card rank={bTh.rank} suit={bTh.suit} size="sm"/></div>}</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#e88a8a"}}>{fb2}</div>
+            </div>
+          </div>
+        </div>
+        <p style={{color:"#d1d5db",fontSize:14,marginTop:12,lineHeight:1.6,textAlign:"left"}}>{(()=>{
+          const cp=cP();
+          const winner=fp>fb2?"Player":fb2>fp?"Banker":"Tie";
+          const parts=[];
+          // Explain Player action
+          if(pTh){
+            parts.push("Player had "+pT+" (0-5), so Player draws a third card: "+pTh.rank+pTh.suit+" (value "+CV[pTh.rank]+"). Final Player total: "+fp+".");
+          }else{
+            if(pT>=8)parts.push("Player had "+pT+" — a Natural. No more cards.");
+            else parts.push("Player had "+pT+" (6-7), so Player stands.");
+          }
+          // Explain Banker action
+          if(bTh){
+            if(pTh===null){
+              parts.push("Player stood, so Banker uses the simple rule: 0-5 draws, 6-7 stands. Banker had "+bT+", so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+            }else{
+              const pThirdVal=CV[pTh.rank];
+              if(bT<=2)parts.push("Banker had "+bT+" (0-2), so Banker always draws regardless of Player's third card: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+              else if(bT===3)parts.push("Banker had 3. Player's third card was "+pThirdVal+" (not 8), so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+              else if(bT===4)parts.push("Banker had 4. Player's third card was "+pThirdVal+" (within 2-7), so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+              else if(bT===5)parts.push("Banker had 5. Player's third card was "+pThirdVal+" (within 4-7), so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+              else if(bT===6)parts.push("Banker had 6. Player's third card was "+pThirdVal+" (6 or 7), so Banker draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+              else parts.push("Banker had "+bT+" and draws: "+bTh.rank+bTh.suit+" (value "+CV[bTh.rank]+"). Final Banker total: "+fb2+".");
+            }
+          }else{
+            if(bT>=8)parts.push("Banker had "+bT+" — a Natural. No more cards.");
+            else if(pT>=8||bT>=8)parts.push("Natural in play — no further draws.");
+            else if(pTh===null){
+              parts.push("Player stood, so Banker uses the simple rule: 0-5 draws, 6-7 stands. Banker had "+bT+", so Banker stands.");
+            }else{
+              const pThirdVal=CV[pTh.rank];
+              if(bT===7)parts.push("Banker had 7 — Banker always stands on 7.");
+              else if(bT===3)parts.push("Banker had 3. Player's third card was "+pThirdVal+" (which is 8), so Banker stands. This is the one exception for Banker 3.");
+              else if(bT===4)parts.push("Banker had 4. Player's third card was "+pThirdVal+" (outside 2-7), so Banker stands.");
+              else if(bT===5)parts.push("Banker had 5. Player's third card was "+pThirdVal+" (outside 4-7), so Banker stands.");
+              else if(bT===6)parts.push("Banker had 6. Player's third card was "+pThirdVal+" (not 6 or 7), so Banker stands.");
+              else parts.push("Banker had "+bT+" and stands.");
+            }
+          }
+          // Result
+          parts.push("Final: Player "+fp+" vs Banker "+fb2+" — "+winner+" wins.");
+          // Payout explanation
+          if(bet.type&&bet.amount>0){
+            if(winner==="Tie")parts.push(bet.type+" bet pushes (returned to guest).");
+            else if(bet.type===winner){if(winner==="Banker"){const cm=bet.amount*0.05;parts.push("Banker bet wins. Pay $"+bet.amount+" minus 5% commission ($"+(cm%1===0?cm:cm.toFixed(2))+") = "+fmt(bet.amount-cm)+" to guest.");}else parts.push("Player bet wins. Pay "+fmt(bet.amount)+" to guest.");}
+            else parts.push(bet.type+" bet loses. Collect "+fmt(bet.amount)+" from guest.");
+          }
+          if(bet.tie>0){if(winner==="Tie")parts.push("Tie bet wins 8 to 1. Pay "+fmt(bet.tie*8)+" to guest.");else parts.push("Tie bet loses. Collect "+fmt(bet.tie)+" from guest.");}
+          if(cp.cm>0)parts.push("Commission owed: "+fmt(cp.cm)+".");
+          return parts.join(" ");
+        })()}</p>
       </div>
       <button style={{...styles.btn,background:"linear-gradient(90deg,#eab308,#d97706)",color:"#000",width:"100%",padding:14,marginTop:16,fontSize:16}} onClick={()=>{setBet(null);setWrn([]);setPh("ready");}}>
         Deal Next Hand
@@ -540,20 +652,27 @@ function SimPage({goHome}){
 }
 
 /* APP */
-function App(){
+export default function App(){
   const[view,setV]=useState("home");
   if(view==="home")return <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",minHeight:"100vh",padding:"60px 20px 20px",background:"#0f172a",color:"#fff",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
-    <div style={{textAlign:"center",marginBottom:32}}>
-      <div style={{fontSize:48}}>🃏</div>
-      <h1 style={{fontSize:28,fontWeight:800,background:"linear-gradient(90deg,#fbbf24,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Baccarat Dealer Training App</h1>
-      <p style={{color:"#94a3b8",fontSize:14,marginTop:6}}>Master every rule. Deal with confidence.</p>
+    <div style={{textAlign:"center",marginBottom:40}}>
+      <h1 style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:-1}}>Baccarat Dealer</h1>
+      <h1 style={{fontSize:32,fontWeight:800,background:"linear-gradient(90deg,#60a5fa,#e88a8a)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginTop:2,paddingBottom:4}}>Training App</h1>
     </div>
     <div style={{display:"flex",gap:20,justifyContent:"center",flexWrap:"wrap"}}>
-      <div onClick={()=>setV("train")} style={{width:280,padding:"32px 24px",borderRadius:16,cursor:"pointer",textAlign:"center",border:"1px solid #334155",background:"linear-gradient(135deg,#1e3a5f,#162032)",transition:"all 0.3s"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🧠</div><div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#60a5fa"}}>Training Modules</div><div style={{fontSize:13,color:"#94a3b8",lineHeight:1.5}}>Learn rules step by step with quizzes.</div>
+      <div onClick={()=>setV("train")} style={{width:280,padding:0,borderRadius:16,cursor:"pointer",textAlign:"left",border:"1px solid rgba(96,165,250,0.2)",background:"linear-gradient(135deg,#172554,#1e3a5f)",transition:"all 0.3s",overflow:"hidden"}}>
+        <div style={{padding:"28px 24px 20px"}}>
+          <div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#60a5fa"}}>Training Modules</div>
+          <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.6}}>Learn rules step by step with quizzes across 4 modules.</div>
+        </div>
+        <div style={{padding:"12px 24px",borderTop:"1px solid rgba(96,165,250,0.15)",color:"#60a5fa",fontSize:13,fontWeight:600}}>Start Learning ›</div>
       </div>
-      <div onClick={()=>setV("sim")} style={{width:280,padding:"32px 24px",borderRadius:16,cursor:"pointer",textAlign:"center",border:"1px solid #334155",background:"linear-gradient(135deg,#14532d,#0f2a18)",transition:"all 0.3s"}}>
-        <div style={{fontSize:48,marginBottom:12}}>🤖</div><div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#4ade80"}}>Live Simulator</div><div style={{fontSize:13,color:"#94a3b8",lineHeight:1.5}}>Deal hands, place bets, handle payouts.</div>
+      <div onClick={()=>setV("sim")} style={{width:280,padding:0,borderRadius:16,cursor:"pointer",textAlign:"left",border:"1px solid rgba(74,222,128,0.2)",background:"linear-gradient(135deg,#052e16,#14532d)",transition:"all 0.3s",overflow:"hidden"}}>
+        <div style={{padding:"28px 24px 20px"}}>
+          <div style={{fontSize:20,fontWeight:800,marginBottom:8,color:"#4ade80"}}>Dealer Simulator</div>
+          <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.6}}>Deal hands, apply drawing rules, and calculate payouts.</div>
+        </div>
+        <div style={{padding:"12px 24px",borderTop:"1px solid rgba(74,222,128,0.15)",color:"#4ade80",fontSize:13,fontWeight:600}}>Start Dealing ›</div>
       </div>
     </div>
   </div>;
@@ -561,9 +680,3 @@ function App(){
   if(view==="sim")return <SimPage goHome={()=>setV("home")}/>;
   return null;
 }
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
-</script>
-</body>
-</html>
